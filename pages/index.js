@@ -40,35 +40,27 @@ export default function Home() {
       throw new Error("Timed out");
     } catch (e) { alert(e.message); setLoading(false); }
   }
-  function emailToMike() {
-    const viewLink = window.location.href;
+   function emailToMike() {
     const subject = "Here's my Telecoms Lawyer image";
-    const body = `Hi Mike,\n\nScenario: ${scenario}\n\nView as webpage: ${viewLink}\nDirect image: ${image}\n\nThanks!`;
+    const body = `Hi Mike,
 
-    // Try mailto
+I *loved* your superhero telecoms lawyer! Here's what i had him do
+
+Scenario: ${scenario}
+
+Direct image: ${image}
+
+Thanks!`;
+
     const mailtoLink = `mailto:mike.conradi@dlapiper.com?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
     
-    // This method works more reliably than window.location.href
     const a = document.createElement('a');
     a.href = mailtoLink;
     a.target = '_blank';
     document.body.appendChild(a);
     a.click();
     document.body.removeChild(a);
-
-    // Fallback: If nothing happened after 1 second, offer Gmail + Copy
-    setTimeout(() => {
-      const gmailUrl = `https://mail.google.com/mail/?view=cm&fs=1&to=mike.conradi@dlapiper.com&su=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
-      
-      if (confirm("If your email didn't open, click OK to open in Gmail, or Cancel to copy the link to clipboard.")) {
-        window.open(gmailUrl, '_blank');
-      } else {
-        navigator.clipboard.writeText(`Subject: ${subject}\n\n${body}`);
-        alert("Copied to clipboard! You can now paste into Outlook/Teams:\n\n" + body);
-      }
-    }, 1000);
   }
- 
   return (
     <div style={{fontFamily:'Arial Black, Arial', background:'#fefefe', minHeight:'100vh'}}>
       <div style={{textAlign:'center', padding:'15px'}}><img src="/header.png" alt="header" style={{maxWidth:'100%', maxHeight:'140px'}} /></div>
