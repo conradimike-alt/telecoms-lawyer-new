@@ -66,7 +66,7 @@ Thanks!`;
       <div style={{textAlign:'center', padding:'15px'}}><img src="/header.png" alt="header" style={{maxWidth:'100%', maxHeight:'140px'}} /></div>
       <div style={{maxWidth:'680px', margin:'0 auto', padding:'16px'}}>
         <div style={{border:'3px solid #000', borderRadius:'14px', padding:'16px', background:'#fff', boxShadow:'6px 6px 0 #000'}}>
-          <input value={scenario} onChange={e=>setScenario(e.target.value)} placeholder="e.g. saves cat from a tree" style={{width:'100%', padding:'14px', border:'3px solid #000', borderRadius:'10px', fontSize:'16px', boxSizing:'border-box'}} />
+          <input value={scenario} onChange={e=>setScenario(e.target.value)} placeholder="What challenge should he meet? Enter, e.g. save cat from a tree" style={{width:'100%', padding:'14px', border:'3px solid #000', borderRadius:'10px', fontSize:'16px', boxSizing:'border-box'}} />
           <button onClick={()=>generate()} disabled={loading} style={{width:'100%', marginTop:'12px', background:'#ffeb3b', border:'3px solid #000', padding:'14px', fontWeight:900, fontSize:'1.1rem', borderRadius:'10px', cursor:'pointer'}}>{loading? '⚡ GENERATING...' : '🎨 GENERATE CARTOON NOW'}</button>
         </div>
         {image && (
