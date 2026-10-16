@@ -1,46 +1,33 @@
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 
 export default function Home() {
-  const [scenario, setScenario] = useState("");
-  const [image, setImage] = useState(null);
+  const [scenario, setScenario] = useState('');
+  const [image, setImage] = useState('');
   const [loading, setLoading] = useState(false);
 
-  useEffect(() => {
-    const p = new URLSearchParams(window.location.search).get('scenario');
-    if (p) {
-      const d = decodeURIComponent(p.replace(/\+/g, ' '));
-      setScenario(d);
-      generate(d);
-    }
-  }, []);
-
-  async function generate(customScen) {
-    const s = customScen || scenario;
-    if (!s.trim()) return;
-    setLoading(true); setImage(null);
-    const url = new URL(window.location); url.searchParams.set('scenario', s);
-    window.history.replaceState({}, '', url);
+  // Generate image - calls your existing API
+  async function generateImage() {
+    if (!scenario) return;
+    setLoading(true);
     try {
-      const res = await fetch('/api/generate', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ scenario: s }) });
-      const json = await res.json();
-      if (!res.ok) throw new Error(json.error);
-      const { id } = json;
-      let tries = 0;
-      while (tries < 60) {
-        await new Promise(r => setTimeout(r, 2000));
-        const poll = await fetch(`/api/status?id=${id}`);
-        const data = await poll.json();
-        if (data.status === 'succeeded') {
-          const out = data.output?.[0] || data.output;
-          if (out) { setImage(out); setLoading(false); return; }
-        }
-        if (data.status === 'failed') throw new Error(data.error);
-        tries++;
+      const res = await fetch('/api/generate', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ scenario }),
+      });
+      const data = await res.json();
+      if (data.image) {
+        setImage(data.image);
       }
-      throw new Error("Timed out");
-    } catch (e) { alert(e.message); setLoading(false); }
+    } catch (e) {
+      console.error(e);
+      alert('Failed to generate image');
+    }
+    setLoading(false);
   }
-   function emailToMike() {
+
+  // FIXED email function - no popup, no View as Webpage line, with Loved line
+  function emailToMike() {
     const subject = "Here's my Telecoms Lawyer image";
     const body = `Hi Mike,
 
@@ -61,44 +48,69 @@ Thanks!`;
     a.click();
     document.body.removeChild(a);
   }
+
   return (
-    <div style={{fontFamily:'Arial Black, Arial', background:'#fefefe', minHeight:'100vh'}}>
-      <div style={{textAlign:'center', padding:'15px'}}><img src="/header.png" alt="header" style={{maxWidth:'100%', maxHeight:'140px'}} /></div>
-      <div style={{maxWidth:'680px', margin:'0 auto', padding:'16px'}}>
-        <div style={{border:'3px solid #000', borderRadius:'14px', padding:'16px', background:'#fff', boxShadow:'6px 6px 0 #000'}}>
-          <input value={scenario} onChange={e=>setScenario(e.target.value)} placeholder="What is he doing? Enter e.g. saving cat from a tree" style={{width:'100%', padding:'14px', border:'3px solid #000', borderRadius:'10px', fontSize:'16px', boxSizing:'border-box'}} />
-          <button onClick={()=>generate()} disabled={loading} style={{width:'100%', marginTop:'12px', background:'#ffeb3b', border:'3px solid #000', padding:'14px', fontWeight:900, fontSize:'1.1rem', borderRadius:'10px', cursor:'pointer'}}>{loading? '⚡ GENERATING...' : '🎨 GENERATE CARTOON NOW'}</button>
-        </div>
-        {image && (
-          <>
-            <div style={{marginTop:'24px', border:'4px solid #000', borderRadius:'12px', overflow:'hidden', boxShadow:'6px 6px 0 #000', position:'relative', lineHeight:0}}>
-              <img src={image} style={{width:'100%', display:'block'}} />
-              <div style={{position:'absolute', top:0, left:0, right:0, background:'#1e88e5', color:'#fff', padding:'12px', textAlign:'center', fontWeight:900, borderBottom:'4px solid #000'}}>TELECOMS LAWYER..</div>
-              <div style={{ 
-  position: 'absolute', 
-  bottom: 0, 
-  left: 0,
-  right: 0,
-  background: 'rgba(0,0,0,0.7)',
-  color: 'white',
-  padding: '12px 20px',
-  textAlign: 'center',
-  fontSize: 'clamp(12px, 2.5vw, 16px)', // auto-shrinks on small screens / long text
-  lineHeight: '1.3',
-  wordWrap: 'break-word',
-  overflowWrap: 'break-word',
-  whiteSpace: 'normal', // allows wrapping to new lines
-  maxHeight: '30%', // never covers more than 30% of image
-  overflowY: 'auto' // adds scroll if it's REALLY long
-}}>
-  {scenario}
-</div>
-              </div>
+    <div style={{ maxWidth: '800px', margin: '40px auto', padding: '20px', fontFamily: 'sans-serif', textAlign: 'center' }}>
+      <h1>Superhero Telecoms Lawyer</h1>
+      
+      <input
+        type="text"
+        value={scenario}
+        onChange={(e) => setScenario(e.target.value)}
+        placeholder="Enter scenario e.g. fighting a BT fibre monster in London"
+        style={{ width: '100%', padding: '12px', fontSize: '16px', marginBottom: '12px' }}
+      />
+
+      <button 
+        onClick={generateImage} 
+        disabled={loading}
+        style={{ padding: '12px 24px', fontSize: '16px', cursor: 'pointer' }}
+      >
+        {loading ? 'Generating...' : 'Generate Image'}
+      </button>
+
+      {image && (
+        <div style={{ marginTop: '30px' }}>
+          <div style={{ position: 'relative', display: 'inline-block', maxWidth: '100%' }}>
+            <img 
+              src={image} 
+              alt="Generated telecoms lawyer" 
+              style={{ maxWidth: '100%', display: 'block', borderRadius: '8px' }} 
+            />
+            {/* FIXED BANNER - WRAPS FOR LONG PROMPTS */}
+            <div style={{
+              position: 'absolute',
+              bottom: 0,
+              left: 0,
+              right: 0,
+              background: 'rgba(0,0,0,0.75)',
+              color: 'white',
+              padding: '12px 20px',
+              textAlign: 'center',
+              fontSize: 'clamp(12px, 2.5vw, 16px)',
+              lineHeight: '1.4',
+              wordWrap: 'break-word',
+              overflowWrap: 'break-word',
+              whiteSpace: 'normal',
+              maxHeight: '40%',
+              overflowY: 'auto',
+              borderBottomLeftRadius: '8px',
+              borderBottomRightRadius: '8px'
+            }}>
+              {scenario}
             </div>
-            <button onClick={emailToMike} style={{width:'100%', marginTop:'20px', background:'#1e88e5', color:'#fff', border:'3px solid #000', padding:'16px', fontWeight:900, fontSize:'1.1rem', borderRadius:'12px', cursor:'pointer', boxShadow:'6px 6px 0 #000'}}>📧 EMAIL THIS TO MIKE</button>
-          </>
-        )}
-      </div>
+          </div>
+
+          <div style={{ marginTop: '20px' }}>
+            <button 
+              onClick={emailToMike}
+              style={{ padding: '12px 24px', fontSize: '16px', background: '#0070f3', color: 'white', border: 'none', borderRadius: '5px', cursor: 'pointer' }}
+            >
+              Email Image to Mike
+            </button>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
