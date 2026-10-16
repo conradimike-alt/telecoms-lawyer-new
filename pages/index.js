@@ -41,11 +41,26 @@ export default function Home() {
     } catch (e) { alert(e.message); setLoading(false); }
   }
 
-  function emailToMike() {
-    const viewLink = window.location.href;
-    const subject = encodeURIComponent("Here's my Telecoms Lawyer image");
-    const body = encodeURIComponent(`Scenario: ${scenario}\n\nView as webpage: ${viewLink}\nDirect image: ${image}`);
-    window.location.href = `mailto:mike.conradi@dlapiper.com?subject=${subject}&body=${body}`;
+    function emailToMike() {
+    const subject = "Here's my Telecoms Lawyer image";
+    const body = `Hi Mike,
+
+I *loved* your superhero telecoms lawyer! Here's what i had him do
+
+Scenario: ${scenario}
+
+Direct image: ${image}
+
+Thanks!`;
+
+    const mailtoLink = `mailto:mike.conradi@dlapiper.com?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
+    
+    const a = document.createElement('a');
+    a.href = mailtoLink;
+    a.target = '_blank';
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
   }
 
   return (
