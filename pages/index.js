@@ -54,6 +54,9 @@ Scenario: ${scenario}
 Image (permanent link - won't expire):
 ${image}
 
+View in app:
+${window.location.origin}${window.location.pathname}?scenario=${encodeURIComponent(scenario)}
+
 Thanks!
 `;
 
