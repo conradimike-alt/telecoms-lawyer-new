@@ -1,5 +1,5 @@
 import Replicate from "replicate";
-import { put } from "@vercel/blob";
+import { put, list, del } from "@vercel/blob";
 
 export default async function handler(req, res) {
   const { id, scenario } = req.query;
@@ -23,17 +23,13 @@ export default async function handler(req, res) {
       if (!imageRes.ok) throw new Error("Failed to download image from Replicate");
       const imageBuffer = await imageRes.arrayBuffer();
 
-      // 1. Try URL param first
+      // Get prompt - from URL param or from Replicate itself
       let rawPrompt = scenario ? decodeURIComponent(scenario) : "";
-      
-      // 2. If that fails, extract it from Replicate's own prompt!
       if (!rawPrompt) {
         const fullPrompt = prediction.input?.prompt || "";
-        // Our prompt format is: "... SCENE: Telecoms Lawyer superhero {SCENARIO}, full body..."
         const m = fullPrompt.match(/SCENE: Telecoms Lawyer superhero (.+?), full body/i);
         if (m && m[1]) rawPrompt = m[1];
       }
-      
       rawPrompt = rawPrompt || "telecoms lawyer";
       
       const safePrompt = rawPrompt.replace(/[^a-zA-Z0-9- ]/g, "").slice(0, 80).replace(/\s+/g, "-").toLowerCase() || "telecoms-lawyer";
@@ -47,6 +43,29 @@ export default async function handler(req, res) {
         access: "public",
         contentType: "application/json",
       });
+
+      // --- AUTO-DELETE at 500 images ---
+      try {
+        const { blobs } = await list({ limit: 1000 });
+        const images = blobs.filter(b => b.pathname.startsWith("gallery/") && b.pathname.endsWith(".webp"));
+        
+        if (images.length > 500) {
+          images.sort((a, b) => new Date(a.uploadedAt) - new Date(b.uploadedAt)); // oldest first
+          const toDelete = images.slice(0, images.length - 500); // delete excess
+          
+          for (const oldImg of toDelete) {
+            await del(oldImg.url);
+            // also delete matching json
+            const oldJsonPath = oldImg.pathname.replace(/\.webp$/, ".json");
+            const oldJson = blobs.find(b => b.pathname === oldJsonPath);
+            if (oldJson) await del(oldJson.url);
+          }
+          console.log(`Auto-deleted ${toDelete.length} old images`);
+        }
+      } catch (cleanupErr) {
+        console.error("Cleanup failed but image saved:", cleanupErr);
+        // Don't fail the request if cleanup fails
+      }
 
       return res.status(200).json({ status: "succeeded", output: blob.url, output_permanent: blob.url, prompt: rawPrompt });
     }
