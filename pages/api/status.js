@@ -2,7 +2,7 @@ import Replicate from "replicate";
 import { put } from "@vercel/blob";
 
 export default async function handler(req, res) {
-  const { id } = req.query;
+  const { id, scenario } = req.query;
 
   if (!id) {
     return res.status(400).json({ error: "Missing prediction id" });
@@ -40,22 +40,39 @@ export default async function handler(req, res) {
       
       const imageBuffer = await imageRes.arrayBuffer();
 
-      // Upload to Vercel Blob permanently
-      const filename = `telecoms-lawyer-${id}-${Date.now()}.webp`;
+      // --- NEW: Make filename from the scenario prompt ---
+      const rawPrompt = scenario ? decodeURIComponent(scenario) : "telecoms-lawyer";
+      const safePrompt = rawPrompt.replace(/[^a-zA-Z0-9- ]/g, "").slice(0, 80).replace(/\s+/g, "-").toLowerCase() || "telecoms-lawyer";
+      const timestamp = Date.now();
+
+      // Upload image permanently WITH PROMPT IN NAME
+      const filename = `gallery/${safePrompt}-${timestamp}.webp`;
       const blob = await put(filename, imageBuffer, {
         access: "public",
         contentType: "image/webp",
       });
 
-      // Return permanent URL
+      // Also save a JSON sidecar with full prompt for perfect gallery display
+      const jsonFilename = `gallery/${safePrompt}-${timestamp}.json`;
+      await put(jsonFilename, JSON.stringify({ 
+        prompt: rawPrompt, 
+        url: blob.url, 
+        id,
+        createdAt: new Date().toISOString() 
+      }), {
+        access: "public",
+        contentType: "application/json",
+      });
+
+      // Return permanent URL + prompt
       return res.status(200).json({
         status: "succeeded",
         output: blob.url,
         output_permanent: blob.url,
+        prompt: rawPrompt,
       });
     }
 
-    // If still processing or failed, return original status
     return res.status(200).json(prediction);
 
   } catch (e) {
