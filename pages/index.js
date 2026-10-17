@@ -32,7 +32,7 @@ export default function Home() {
         const poll = await fetch(`/api/status?id=${id}`);
         const data = await poll.json();
         if (data.status === 'succeeded') {
-          const out = data.output?.[0] || data.output;
+          const out = data.output?.[0] || data.output || data.output_permanent;
           if (out) { setImage(out); setLoading(false); return; }
         }
         if (data.status === 'failed') throw new Error(data.error);
@@ -46,15 +46,21 @@ export default function Home() {
     const subject = "Here's my Telecoms Lawyer image";
     const body = `Hi Mike,
 
-I *loved* your superhero telecoms lawyer! Here's what i had him do
+I *loved* your superhero telecoms lawyer! Here's what I had him do:
 
 Scenario: ${scenario}
 
-Direct image: ${image}
+Image (permanent link - won't expire):
+${image}
 
-Thanks!`;
+View in app:
+${window.location.origin}${window.location.pathname}?scenario=${encodeURIComponent(scenario)}
+
+Thanks!
+`;
 
     const mailtoLink = `mailto:mike.conradi@dlapiper.com?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
+    
     const a = document.createElement('a');
     a.href = mailtoLink;
     a.target = '_blank';
@@ -79,9 +85,7 @@ Thanks!`;
             <>
               <div style={{marginTop:'24px', border:'4px solid #000', borderRadius:'12px', overflow:'hidden', boxShadow:'6px 6px 0 #000', position:'relative', lineHeight:0}}>
                 <img src={image} style={{width:'100%', display:'block'}} />
-                {/* TOP BLUE BAR - NOW MATCHES HEADER */}
                 <div style={{position:'absolute', top:0, left:0, right:0, background:'#1e88e5', color:'#fff', padding:'12px', textAlign:'center', fontWeight:400, borderBottom:'4px solid #000', fontFamily:"'Bangers', cursive", fontSize:'22px', letterSpacing:'1.5px', lineHeight:1}}>TELECOMS LAWYER..</div>
-                {/* BOTTOM YELLOW BANNER - NOW MATCHES HEADER + WRAPS */}
                 <div style={{position:'absolute', bottom:'18px', left:'50%', transform:'translateX(-50%)', width:'90%', display:'flex', justifyContent:'center', filter:'drop-shadow(3px 3px 0 #000)', lineHeight:'1.2'}}>
                   <div style={{background:'#ffeb3b', border:'3px solid #000', padding:'10px 20px', fontWeight:400, textTransform:'uppercase', textAlign:'center', whiteSpace:'normal', wordWrap:'break-word', overflowWrap:'break-word', maxWidth:'100%', fontFamily:"'Bangers', cursive", fontSize:'clamp(16px, 4vw, 20px)', letterSpacing:'1px'}}>{scenario}</div>
                 </div>
