@@ -31,16 +31,17 @@ export default async function handler(req, res) {
   const replicate = new Replicate({ auth: process.env.REPLICATE_API_TOKEN });
 
   try {
-    // Recraft is amazing at comic style - we can be more specific with style
-    const stylePrompt = `Vintage American comic book panel, exact same character, thick bold black ink outlines, flat vibrant cel-shaded colors, Ben-Day dot halftone texture, caricature of SAME bald telecoms lawyer man: bald head, thick black rectangular glasses, wearing santa claus outfit with white fur trim, brown superhero cape with yellow TL shield logo on chest, mid 30s, expressive face, dynamic heroic action pose, detailed comic background, hand-drawn comic book illustration`;
+    const stylePrompt = `Vintage American comic book panel, exact same character and art style as reference, thick bold black ink outlines, flat vibrant cel-shaded colors, Ben-Day dot halftone texture, caricature of SAME bald telecoms lawyer man: bald head, thick black rectangular glasses, wearing santa claus outfit, brown superhero cape with yellow TL shield logo, aged mid 30s, expressive face, dynamic heroic action pose, detailed comic background, dramatic action scene, comic book illustration, hand-drawn, no photorealism, no 3d render`;
 
     const prediction = await replicate.predictions.create({
-      model: "recraft-ai/recraft-v3",
+      model: "black-forest-labs/flux-1.1-pro", // <-- 6x faster + better quality
       input: {
-        prompt: `${stylePrompt}, SCENE: Telecoms Lawyer superhero ${cleanScenario}, full body heroic action, vintage comic cover`,
-        size: "1024x1024",
-        style: "digital_illustration", // best for comic: digital_illustration
-        style_id: 2, // 2 = more illustrative / bold
+        prompt: `${stylePrompt}, SCENE: Telecoms Lawyer superhero ${cleanScenario}, full body heroic action`,
+        aspect_ratio: "1:1",
+        output_format: "webp",
+        output_quality: 90,
+        safety_tolerance: 2,
+        prompt_upsampling: true
       }
     });
 
