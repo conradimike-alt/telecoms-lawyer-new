@@ -28,7 +28,6 @@ export default async function handler(req, res) {
     if (!imageRes.ok) throw new Error("Failed to download from Replicate");
     const imageBuffer = await imageRes.arrayBuffer();
 
-    // FIXED: Don't double-decode — Next.js already decoded it
     const rawPrompt = (scenario || "telecoms lawyer").toString().slice(0, 200);
     const safePrompt = rawPrompt.replace(/[^a-zA-Z0-9- ]/g, "").slice(0, 60).replace(/\s+/g, "-").toLowerCase() || "telecoms-lawyer";
     const timestamp = Date.now();
@@ -44,20 +43,23 @@ export default async function handler(req, res) {
       addRandomSuffix: false,
     });
 
-    // Auto-delete at 500 — runs AFTER returning? No, run before but with safety
+    // Auto-delete at 500 — fast version
     try {
       const { blobs } = await list({ limit: 1000, prefix: "gallery/" });
       const images = blobs.filter(b => b.pathname.endsWith(".webp"));
       if (images.length > 500) {
-        images.sort((a,b) => new Date(a.uploadedAt) - new Date(b.uploadedAt));
-        const toDelete = images.slice(0, images.length - 500);
+        images.sort((a,b) => new Date(a.uploadedAt).getTime() - new Date(b.uploadedAt).getTime());
+        const excess = images.length - 500;
+        const toDelete = images.slice(0, Math.min(excess, 5));
         for (const old of toDelete) {
           await del(old.url);
           const j = blobs.find(b => b.pathname === old.pathname.replace(/\.webp$/, ".json"));
           if (j) await del(j.url);
         }
       }
-    } catch (e) { console.log("cleanup skip:", e.message); }
+    } catch (e) {
+      console.log("cleanup skip:", e.message);
+    }
 
     return res.status(200).json({ status: "succeeded", output: blob.url, output_permanent: blob.url, prompt: rawPrompt });
 
