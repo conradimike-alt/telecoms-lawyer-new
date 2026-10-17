@@ -1,101 +1,59 @@
-import { useState, useEffect } from 'react';
-import Head from 'next/head';
+import Replicate from "replicate";
+import { put } from "@vercel/blob";
 
-export default function Home() {
-  const [scenario, setScenario] = useState("");
-  const [image, setImage] = useState(null);
-  const [loading, setLoading] = useState(false);
+export default async function handler(req, res) {
+  const { id, scenario } = req.query;
+  if (!id) return res.status(400).json({ error: "Missing prediction id" });
+  if (!process.env.REPLICATE_API_TOKEN) return res.status(500).json({ error: "REPLICATE_API_TOKEN missing" });
 
-  useEffect(() => {
-    const p = new URLSearchParams(window.location.search).get('scenario');
-    if (p) {
-      const d = decodeURIComponent(p.replace(/\+/g, ' '));
-      setScenario(d);
-      generate(d);
-    }
-  }, []);
+  const replicate = new Replicate({ auth: process.env.REPLICATE_API_TOKEN });
 
-  async function generate(customScen) {
-    const s = customScen || scenario;
-    if (!s.trim()) return;
-    setLoading(true); setImage(null);
-    const url = new URL(window.location); url.searchParams.set('scenario', s);
-    window.history.replaceState({}, '', url);
-    try {
-      const res = await fetch('/api/generate', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ scenario: s }) });
-      const json = await res.json();
-      if (!res.ok) throw new Error(json.error);
-      const { id } = json;
-      let tries = 0;
-      while (tries < 60) {
-        await new Promise(r => setTimeout(r, 2000));
-        // FIXED: now passes scenario so it gets saved with the image
-        const poll = await fetch(`/api/status?id=${id}&scenario=${encodeURIComponent(s)}`);
-        const data = await poll.json();
-        if (data.status === 'succeeded') {
-          const out = Array.isArray(data.output) ? data.output[0] : (data.output || data.output_permanent);
-          if (out) { setImage(out); setLoading(false); return; }
-        }
-        if (data.status === 'failed') throw new Error(data.error);
-        tries++;
+  try {
+    const prediction = await replicate.predictions.get(id);
+
+    if (prediction.status === "succeeded") {
+      let outputUrl = prediction.output?.[0] || prediction.output;
+      if (!outputUrl) return res.status(200).json(prediction);
+
+      if (outputUrl.includes("blob.vercel-storage.com") || outputUrl.includes("public.blob.vercel-storage")) {
+        return res.status(200).json({ ...prediction, output: outputUrl });
       }
-      throw new Error("Timed out");
-    } catch (e) { alert(e.message); setLoading(false); }
+
+      const imageRes = await fetch(outputUrl);
+      if (!imageRes.ok) throw new Error("Failed to download image from Replicate");
+      const imageBuffer = await imageRes.arrayBuffer();
+
+      // 1. Try URL param first
+      let rawPrompt = scenario ? decodeURIComponent(scenario) : "";
+      
+      // 2. If that fails, extract it from Replicate's own prompt!
+      if (!rawPrompt) {
+        const fullPrompt = prediction.input?.prompt || "";
+        // Our prompt format is: "... SCENE: Telecoms Lawyer superhero {SCENARIO}, full body..."
+        const m = fullPrompt.match(/SCENE: Telecoms Lawyer superhero (.+?), full body/i);
+        if (m && m[1]) rawPrompt = m[1];
+      }
+      
+      rawPrompt = rawPrompt || "telecoms lawyer";
+      
+      const safePrompt = rawPrompt.replace(/[^a-zA-Z0-9- ]/g, "").slice(0, 80).replace(/\s+/g, "-").toLowerCase() || "telecoms-lawyer";
+      const timestamp = Date.now();
+
+      const filename = `gallery/${safePrompt}-${timestamp}.webp`;
+      const blob = await put(filename, imageBuffer, { access: "public", contentType: "image/webp" });
+
+      const jsonFilename = `gallery/${safePrompt}-${timestamp}.json`;
+      await put(jsonFilename, JSON.stringify({ prompt: rawPrompt, url: blob.url, id }), {
+        access: "public",
+        contentType: "application/json",
+      });
+
+      return res.status(200).json({ status: "succeeded", output: blob.url, output_permanent: blob.url, prompt: rawPrompt });
+    }
+
+    return res.status(200).json(prediction);
+  } catch (e) {
+    console.error("status error", e);
+    return res.status(500).json({ error: e.message });
   }
-
-  function emailToMike() {
-    const subject = "Here's my Telecoms Lawyer image";
-    const body = `Hi Mike,
-
-I *loved* your superhero telecoms lawyer! Here's what I had him do:
-
-Scenario: ${scenario}
-
-Image (permanent link - won't expire):
-${image}
-
-View in app:
-${window.location.origin}${window.location.pathname}?scenario=${encodeURIComponent(scenario)}
-
-Thanks!
-`;
-
-    const mailtoLink = `mailto:mike.conradi@dlapiper.com?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
-    
-    const a = document.createElement('a');
-    a.href = mailtoLink;
-    a.target = '_blank';
-    document.body.appendChild(a);
-    a.click();
-    document.body.removeChild(a);
-  }
-
-  return (
-    <>
-      <Head>
-        <link href="https://fonts.googleapis.com/css2?family=Bangers&family=Luckiest+Guy&display=swap" rel="stylesheet" />
-      </Head>
-      <div style={{fontFamily:'Arial Black, Arial', background:'#fefefe', minHeight:'100vh'}}>
-        <div style={{textAlign:'center', padding:'15px'}}><img src="/header.png" alt="header" style={{maxWidth:'100%', maxHeight:'140px'}} /></div>
-        <div style={{maxWidth:'680px', margin:'0 auto', padding:'16px'}}>
-          <div style={{border:'3px solid #000', borderRadius:'14px', padding:'16px', background:'#fff', boxShadow:'6px 6px 0 #000'}}>
-            <input value={scenario} onChange={e=>setScenario(e.target.value)} placeholder="What is he doing? e.g. saving cat from a tree" style={{width:'100%', padding:'14px', border:'3px solid #000', borderRadius:'10px', fontSize:'16px', boxSizing:'border-box'}} />
-            <button onClick={()=>generate()} disabled={loading} style={{width:'100%', marginTop:'12px', background:'#ffeb3b', border:'3px solid #000', padding:'14px', fontWeight:900, fontSize:'1.1rem', borderRadius:'10px', cursor:'pointer'}}>{loading? '⚡ GENERATING...' : '🎨 GENERATE CARTOON NOW'}</button>
-          </div>
-          {image && (
-            <>
-              <div style={{marginTop:'24px', border:'4px solid #000', borderRadius:'12px', overflow:'hidden', boxShadow:'6px 6px 0 #000', position:'relative', lineHeight:0}}>
-                <img src={image} style={{width:'100%', display:'block'}} />
-                <div style={{position:'absolute', top:0, left:0, right:0, background:'#1e88e5', color:'#fff', padding:'12px', textAlign:'center', fontWeight:400, borderBottom:'4px solid #000', fontFamily:"'Bangers', cursive", fontSize:'22px', letterSpacing:'1.5px', lineHeight:1}}>TELECOMS LAWYER..</div>
-                <div style={{position:'absolute', bottom:'18px', left:'50%', transform:'translateX(-50%)', width:'90%', display:'flex', justifyContent:'center', filter:'drop-shadow(3px 3px 0 #000)', lineHeight:'1.2'}}>
-                  <div style={{background:'#ffeb3b', border:'3px solid #000', padding:'10px 20px', fontWeight:400, textTransform:'uppercase', textAlign:'center', whiteSpace:'normal', wordWrap:'break-word', overflowWrap:'break-word', maxWidth:'100%', fontFamily:"'Bangers', cursive", fontSize:'clamp(16px, 4vw, 20px)', letterSpacing:'1px'}}>{scenario}</div>
-                </div>
-              </div>
-              <button onClick={emailToMike} style={{width:'100%', marginTop:'20px', background:'#1e88e5', color:'#fff', border:'3px solid #000', padding:'16px', fontWeight:900, fontSize:'1.1rem', borderRadius:'12px', cursor:'pointer', boxShadow:'6px 6px 0 #000'}}>📧 EMAIL THIS TO MIKE</button>
-            </>
-          )}
-        </div>
-      </div>
-    </>
-  );
 }
