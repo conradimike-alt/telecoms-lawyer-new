@@ -1,70 +1,72 @@
 import Replicate from "replicate";
-import { put, list, del } from "@vercel/blob";
+import { put } from "@vercel/blob";
+
+export const dynamic = 'force-dynamic';
 
 export default async function handler(req, res) {
+  res.setHeader('Cache-Control', 'no-store, max-age=0');
+  
   const { id, scenario } = req.query;
-  if (!id) return res.status(400).json({ error: "Missing prediction id" });
-  if (!process.env.REPLICATE_API_TOKEN) return res.status(500).json({ error: "REPLICATE_API_TOKEN missing" });
+
+  if (!id) return res.status(400).json({ error: "Missing id" });
+
+  if (!process.env.REPLICATE_API_TOKEN) {
+    return res.status(500).json({ error: "REPLICATE_API_TOKEN missing" });
+  }
 
   const replicate = new Replicate({ auth: process.env.REPLICATE_API_TOKEN });
 
   try {
     const prediction = await replicate.predictions.get(id);
 
+    // Still running? Just tell frontend to keep polling
     if (prediction.status !== "succeeded") {
-      return res.status(200).json(prediction);
+      return res.status(200).json({ status: prediction.status });
     }
 
-    let outputUrl = prediction.output?.[0] || prediction.output;
-    if (!outputUrl) return res.status(200).json(prediction);
+    // --- IT SUCCEEDED ---
+    let outputUrl = null;
 
-    // Already permanent
-    if (outputUrl.includes("blob.vercel-storage.com") || outputUrl.includes("public.blob.vercel-storage")) {
-      return res.status(200).json({ status: "succeeded", output: outputUrl, output_permanent: outputUrl });
+    // FIX: Handle both string and array returns
+    if (typeof prediction.output === "string") {
+      outputUrl = prediction.output;
+    } else if (Array.isArray(prediction.output) && prediction.output.length > 0) {
+      outputUrl = prediction.output[0];
     }
 
-    // Download + re-upload permanently
+    if (!outputUrl) {
+      return res.status(500).json({ error: "No output URL from Replicate", prediction });
+    }
+
+    // Save permanently to Vercel Blob for gallery
     const imageRes = await fetch(outputUrl);
-    if (!imageRes.ok) throw new Error("Failed to download from Replicate");
     const imageBuffer = await imageRes.arrayBuffer();
 
-    const rawPrompt = (scenario || "telecoms lawyer").toString().slice(0, 200);
-    const safePrompt = rawPrompt.replace(/[^a-zA-Z0-9- ]/g, "").slice(0, 60).replace(/\s+/g, "-").toLowerCase() || "telecoms-lawyer";
-    const timestamp = Date.now();
+    const cleanName = (scenario || "telecoms-lawyer").toString().trim().toLowerCase()
+      .replace(/[^a-z0-9]+/g, "-").replace(/^-+|-+$/g, "").slice(0, 60) || "image";
+    
+    const fileName = `gallery/${cleanName}-${Date.now()}.webp`;
+    const jsonFileName = `gallery/${cleanName}-${Date.now()}.json`;
 
-    const filename = `gallery/${safePrompt}-${timestamp}.webp`;
-    const blob = await put(filename, imageBuffer, { access: "public", contentType: "image/webp", addRandomSuffix: false });
-
-    // Save json sidecar
-    const jsonFilename = `gallery/${safePrompt}-${timestamp}.json`;
-    await put(jsonFilename, JSON.stringify({ prompt: rawPrompt, url: blob.url }), {
+    const blob = await put(fileName, imageBuffer, {
       access: "public",
-      contentType: "application/json",
-      addRandomSuffix: false,
+      contentType: "image/webp",
     });
 
-    // Auto-delete at 500 — fast version
-    try {
-      const { blobs } = await list({ limit: 1000, prefix: "gallery/" });
-      const images = blobs.filter(b => b.pathname.endsWith(".webp"));
-      if (images.length > 500) {
-        images.sort((a,b) => new Date(a.uploadedAt).getTime() - new Date(b.uploadedAt).getTime());
-        const excess = images.length - 500;
-        const toDelete = images.slice(0, Math.min(excess, 5));
-        for (const old of toDelete) {
-          await del(old.url);
-          const j = blobs.find(b => b.pathname === old.pathname.replace(/\.webp$/, ".json"));
-          if (j) await del(j.url);
-        }
-      }
-    } catch (e) {
-      console.log("cleanup skip:", e.message);
-    }
+    // Save prompt JSON sidecar for gallery
+    await put(jsonFileName, JSON.stringify({ prompt: scenario, url: blob.url, createdAt: new Date().toISOString() }), {
+      access: "public",
+      contentType: "application/json",
+    });
 
-    return res.status(200).json({ status: "succeeded", output: blob.url, output_permanent: blob.url, prompt: rawPrompt });
+    return res.status(200).json({ 
+      status: "succeeded", 
+      imageUrl: blob.url, // use the permanent blob url
+      replicateUrl: outputUrl 
+    });
 
   } catch (e) {
-    console.error("status error", e);
+    console.error(e);
     return res.status(500).json({ error: e.message });
   }
 }
