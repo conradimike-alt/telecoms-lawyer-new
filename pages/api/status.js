@@ -3,7 +3,6 @@ import { put } from "@vercel/blob";
 
 export default async function handler(req, res) {
   const { id, scenario } = req.query;
-
   if (!id) return res.status(400).json({ error: "Missing prediction id" });
   if (!process.env.REPLICATE_API_TOKEN) return res.status(500).json({ error: "REPLICATE_API_TOKEN missing" });
 
@@ -24,17 +23,27 @@ export default async function handler(req, res) {
       if (!imageRes.ok) throw new Error("Failed to download image from Replicate");
       const imageBuffer = await imageRes.arrayBuffer();
 
-      // FIX: Use ONE timestamp for both files
-      const rawPrompt = scenario ? decodeURIComponent(scenario) : "telecoms-lawyer";
+      // 1. Try URL param first
+      let rawPrompt = scenario ? decodeURIComponent(scenario) : "";
+      
+      // 2. If that fails, extract it from Replicate's own prompt!
+      if (!rawPrompt) {
+        const fullPrompt = prediction.input?.prompt || "";
+        // Our prompt format is: "... SCENE: Telecoms Lawyer superhero {SCENARIO}, full body..."
+        const m = fullPrompt.match(/SCENE: Telecoms Lawyer superhero (.+?), full body/i);
+        if (m && m[1]) rawPrompt = m[1];
+      }
+      
+      rawPrompt = rawPrompt || "telecoms lawyer";
+      
       const safePrompt = rawPrompt.replace(/[^a-zA-Z0-9- ]/g, "").slice(0, 80).replace(/\s+/g, "-").toLowerCase() || "telecoms-lawyer";
       const timestamp = Date.now();
 
       const filename = `gallery/${safePrompt}-${timestamp}.webp`;
       const blob = await put(filename, imageBuffer, { access: "public", contentType: "image/webp" });
 
-      // Use SAME timestamp so we can find it later
       const jsonFilename = `gallery/${safePrompt}-${timestamp}.json`;
-      await put(jsonFilename, JSON.stringify({ prompt: rawPrompt, url: blob.url, id, createdAt: new Date().toISOString() }), {
+      await put(jsonFilename, JSON.stringify({ prompt: rawPrompt, url: blob.url, id }), {
         access: "public",
         contentType: "application/json",
       });
