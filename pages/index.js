@@ -29,7 +29,8 @@ export default function Home() {
       let tries = 0;
       while (tries < 60) {
         await new Promise(r => setTimeout(r, 2000));
-        const poll = await fetch(`/api/status?id=${id}`);
+        // FIXED: now passes scenario so it gets saved with the image
+        const poll = await fetch(`/api/status?id=${id}&scenario=${encodeURIComponent(s)}`);
         const data = await poll.json();
         if (data.status === 'succeeded') {
           const out = Array.isArray(data.output) ? data.output[0] : (data.output || data.output_permanent);
