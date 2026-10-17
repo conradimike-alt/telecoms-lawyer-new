@@ -32,7 +32,7 @@ export default function Home() {
         const poll = await fetch(`/api/status?id=${id}`);
         const data = await poll.json();
         if (data.status === 'succeeded') {
-          const out = data.output?.[0] || data.output || data.output_permanent;
+          const out = Array.isArray(data.output) ? data.output[0] : (data.output || data.output_permanent);
           if (out) { setImage(out); setLoading(false); return; }
         }
         if (data.status === 'failed') throw new Error(data.error);
