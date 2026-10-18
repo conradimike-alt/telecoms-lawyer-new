@@ -1,68 +1,82 @@
 import Replicate from "replicate";
-import { put, list } from "@vercel/blob";
-
-export const dynamic = 'force-dynamic';
+import { put } from "@vercel/blob";
 
 export default async function handler(req, res) {
-  res.setHeader('Cache-Control', 'no-store, max-age=0');
   const { id, scenario } = req.query;
-  if (!id) return res.status(400).json({ error: "Missing id" });
 
-  const replicate = new Replicate({ auth: process.env.REPLICATE_API_TOKEN });
+  if (!id) {
+    return res.status(400).json({ error: "Missing prediction id" });
+  }
+
+  if (!process.env.REPLICATE_API_TOKEN) {
+    return res.status(500).json({ error: "REPLICATE_API_TOKEN missing" });
+  }
+
+  const replicate = new Replicate({
+    auth: process.env.REPLICATE_API_TOKEN,
+  });
 
   try {
     const prediction = await replicate.predictions.get(id);
 
-    if (prediction.status === "failed") {
-      return res.status(200).json({ status: "failed", error: prediction.error });
-    }
-    if (prediction.status !== "succeeded") {
-      return res.status(200).json({ status: prediction.status });
-    }
+    if (prediction.status === "succeeded") {
+      let outputUrl = prediction.output?.[0] || prediction.output;
+      
+      if (!outputUrl) {
+        return res.status(200).json(prediction);
+      }
 
-    // --- SUCCEEDED ---
-    let outputUrl = typeof prediction.output === "string" ? prediction.output : prediction.output?.[0];
-    if (!outputUrl) return res.status(500).json({ error: "No output" });
+      // If it's already our permanent blob URL, return as-is
+      if (outputUrl.includes("blob.vercel-storage.com") || outputUrl.includes("public.blob.vercel-storage")) {
+        return res.status(200).json({
+          ...prediction,
+          output: outputUrl,
+        });
+      }
 
-    // IDEMPOTENT: Use prediction ID as filename so we only ever save once
-    const fileName = `gallery/${id}.webp`;
-    const jsonFileName = `gallery/${id}.json`;
-
-    // Check if we already saved this ID before - if so, reuse it
-    const existing = await list({ prefix: fileName, limit: 1 });
-    let blobUrl = existing.blobs.find(b => b.pathname === fileName)?.url;
-
-    if (!blobUrl) {
+      // Download from Replicate (temporary 1-hour URL)
       const imageRes = await fetch(outputUrl);
+      if (!imageRes.ok) throw new Error("Failed to download image from Replicate");
+      
       const imageBuffer = await imageRes.arrayBuffer();
 
-      const blob = await put(fileName, imageBuffer, {
+      // --- NEW: Make filename from the scenario prompt ---
+      const rawPrompt = scenario ? decodeURIComponent(scenario) : "telecoms-lawyer";
+      const safePrompt = rawPrompt.replace(/[^a-zA-Z0-9- ]/g, "").slice(0, 80).replace(/\s+/g, "-").toLowerCase() || "telecoms-lawyer";
+      const timestamp = Date.now();
+
+      // Upload image permanently WITH PROMPT IN NAME
+      const filename = `gallery/${safePrompt}-${timestamp}.webp`;
+      const blob = await put(filename, imageBuffer, {
         access: "public",
         contentType: "image/webp",
-        addRandomSuffix: false, // IMPORTANT: don't make duplicates
       });
-      blobUrl = blob.url;
 
-      const cleanScenario = (scenario || "telecoms lawyer").toString().slice(0, 200);
-      await put(jsonFileName, JSON.stringify({ prompt: cleanScenario, url: blobUrl, replicateId: id }), {
+      // Also save a JSON sidecar with full prompt for perfect gallery display
+      const jsonFilename = `gallery/${safePrompt}-${timestamp}.json`;
+      await put(jsonFilename, JSON.stringify({ 
+        prompt: rawPrompt, 
+        url: blob.url, 
+        id,
+        createdAt: new Date().toISOString() 
+      }), {
         access: "public",
         contentType: "application/json",
-        addRandomSuffix: false,
+      });
+
+      // Return permanent URL + prompt
+      return res.status(200).json({
+        status: "succeeded",
+        output: blob.url,
+        output_permanent: blob.url,
+        prompt: rawPrompt,
       });
     }
 
-    // Return EVERY possible field name your frontend might be checking
-    return res.status(200).json({ 
-      status: "succeeded",
-      imageUrl: blobUrl,
-      image: blobUrl,
-      url: blobUrl,
-      output: blobUrl,
-      replicateUrl: outputUrl
-    });
+    return res.status(200).json(prediction);
 
   } catch (e) {
-    console.error(e);
+    console.error("status error", e);
     return res.status(500).json({ error: e.message });
   }
 }
