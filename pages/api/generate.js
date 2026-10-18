@@ -63,7 +63,7 @@ export default async function handler(req, res) {
         aspect_ratio: "1:1",
         output_format: "webp",
         output_quality: 80, // was 90 - faster upload, looks identical
-        num_inference_steps: 22 // was 28 - sweet spot for comics, saves 4-5 sec
+        num_inference_steps: 20 // was 28 - sweet spot for comics, saves 4-5 sec
       }
     });
 
