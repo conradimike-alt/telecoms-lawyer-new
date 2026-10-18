@@ -51,7 +51,7 @@ export default async function handler(req, res) {
 
   try {
     // STYLE-LOCKED PROMPT MATCHED TO YOUR 6-PANEL CARTOON
-    const stylePrompt = `Vintage American comic book panel, exact same character and art style as reference, thick bold black ink outlines, flat vibrant cel-shaded colors, Ben-Day dot halftone texture, caricature of SAME bald telecoms lawyer man: completely bald head, clean shaven face, smooth face with no beard, baby smooth skin, bald head, thick black rectangular glasses, wearing santa claus hat only, brown superhero cape with yellow TL shield logo, aged mid 30s, young clean shaven superhero, expressive face, dynamic heroic action pose, detailed comic background, dramatic action scene, comic book illustration, hand-drawn, no photorealism, no 3d render, clean shaven`
+    const stylePrompt = `Vintage American comic book panel, exact same character and art style as reference, thick bold black ink outlines, flat vibrant cel-shaded colors, Ben-Day dot halftone texture, caricature of SAME bald telecoms lawyer man: completely bald head, clean shaven face, smooth face with no beard, baby smooth skin, bald head, thick black rectangular glasses, wearing santa claus outfit, brown superhero cape with yellow TL shield logo, aged mid 30s, young clean shaven superhero, expressive face, dynamic heroic action pose, detailed comic background, dramatic action scene, comic book illustration, hand-drawn, no photorealism, no 3d render, clean shaven`
 
     const prediction = await replicate.predictions.create({
       model: "black-forest-labs/flux-dev",
