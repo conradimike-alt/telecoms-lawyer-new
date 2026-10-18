@@ -6,7 +6,7 @@ const BLOCKED_WORDS = [
   "penis", "vagina", "boobs", "tits", "ass", "anal",
   // bestiality / animal abuse - what you saw
   "bestiality", "zoophilia", "dog sex", "having sex with a dog", "fucking a dog", "fucking dog",
-    // hate / extreme violence / self-harm - keep it heroic
+  // hate / extreme violence / self-harm - keep it heroic
   "kill", "murder", "suicide", "rape", "nazi", "hitler",
   // just block "dog" + sexual context is covered above, but block obvious trolling
   "fuck", "shit", "cunt"
@@ -57,13 +57,13 @@ export default async function handler(req, res) {
       model: "black-forest-labs/flux-dev",
       input: {
         prompt: `${stylePrompt}, SCENE: Telecoms Lawyer superhero ${cleanScenario}, full body heroic action`,
-        go_fast: false,
-        guidance: 3.5,
+        go_fast: true, // FAST hardware - 30% speed boost
+        guidance: 3, // was 3.5 - slightly faster, still locked style
         num_outputs: 1,
         aspect_ratio: "1:1",
         output_format: "webp",
-        output_quality: 90,
-        num_inference_steps: 28
+        output_quality: 80, // was 90 - faster upload, looks identical
+        num_inference_steps: 22 // was 28 - sweet spot for comics, saves 4-5 sec
       }
     });
 
