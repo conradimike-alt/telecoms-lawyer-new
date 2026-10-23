@@ -105,6 +105,8 @@ function getRandomChallenges() {
   return shuffle([...generalPicked, ...telecomsPicked, newIdea]);
 }
 
+const SIDE_IMAGE_URL = "https://hxs9xoachdqkxjdj.public.blob.vercel-storage.com/gallery/flying-through-the-air-superman-style-but-with-tl-on-his-shirt-not-s-looking-her-1792771695970-hGWsWtPFEGmtuB1xAImV6jvqjKweRZ.webp";
+
 export default function Home() {
   const [scenario, setScenario] = useState("");
   const [suggestions, setSuggestions] = useState([]);
@@ -143,7 +145,7 @@ export default function Home() {
 
         <div className="main-row" style={{ width: "98%", maxWidth: 1320, display: "flex", alignItems: "stretch", justifyContent: "center", gap: 16, marginTop: 28 }}>
           <div style={{ width: 200, flexShrink: 0, display: "flex", alignSelf: "stretch" }} className="side-hero">
-            <img src="https://hxs9xoachdqkxjdj.public.blob.vercel-storage.com/gallery/flying-through-the-air-superman-style-but-with-tl-on-his-shirt-not-s-looking-her-1792771695970-hGWsWtPFEGmtuB1xAImV6jvqjKweRZ.webp" alt="" style={{ width: "100%", height: "100%", objectFit: "cover", borderRadius: 12 }} />
+            <img src={SIDE_IMAGE_URL} alt="" style={{ width: "100%", height: "100%", objectFit: "cover", borderRadius: 12 }} />
           </div>
           
           <div className="center-box" style={{ flex: 1, maxWidth: 920, border: "3px solid black", borderRadius: 18, padding: 18, background: "white", boxShadow: "5px 5px 0px 0px black" }}>
@@ -159,19 +161,9 @@ export default function Home() {
           </div>
 
           <div style={{ width: 200, flexShrink: 0, display: "flex", alignSelf: "stretch" }} className="side-hero">
-            <img src="https://hxs9xoachdqkxjdj.public.blob.vercel-storage.com/gallery/flying-through-the-air-superman-style-but-with-tl-on-his-shirt-not-s-looking-her-1792771695970-hGWsWtPFEGmtuB1xAImV6jvqjKweRZ.webp" alt="" style={{ width: "100%", height: "100%", objectFit: "cover", borderRadius: 12 }} />
+            <img src={SIDE_IMAGE_URL} alt="" style={{ width: "100%", height: "100%", objectFit: "cover", borderRadius: 12 }} />
           </div>
         </div>
-
-        <style>{`
-          @media (max-width: 1100px) { .side-hero { display: none !important; } }
-          @media (max-width: 768px) {
-            .main-row { width: 100% !important; margin-top: 12px !important; padding: 0 10px !important; box-sizing: border-box; }
-            .center-box { max-width: 100% !important; width: 100% !important; padding: 14px !important; border-radius: 14px !important; box-shadow: 3px 3px 0px 0px black !important; }
-            .title-row { flex-direction: column !important; align-items: flex-start !important; gap: 10px !important; }
-            .hero-title { white-space: normal !important; font-size: 26px !important; line-height: 1.15 !important; letter-spacing: 1px !important; word-spacing: 1px !important; }
-          }
-        `}</style>
 
         {imageUrl && (
           <div style={{ marginTop: 24, width: "95%", maxWidth: 920, border: "3px solid black", borderRadius: 18, padding: 18, background: "white", boxShadow: "5px 5px 0px 0px black", textAlign: "center", boxSizing: "border-box" }}>
@@ -181,6 +173,36 @@ export default function Home() {
             <button onClick={() => { const subject = encodeURIComponent(`New Telecoms Lawyer cartoon: ${scenario}`); const body = encodeURIComponent(`Hi Mike,\n\nHere's the latest Telecoms Lawyer hero cartoon:\n\nChallenge: ${scenario}\n\nPermanent image link (Blob store - won't expire):\n${imageUrl}\n\nBest,\n`); window.location.href = `mailto:mike.conradi@dlapiper.com?subject=${subject}&body=${body}`; }} style={{ width: "100%", marginTop: 16, background: "#1a9de3", color: "white", border: "3px solid black", borderRadius: 12, padding: "14px 0", fontFamily: "'Bangers', cursive", fontSize: 20, letterSpacing: "1px", cursor: "pointer", boxShadow: "3px 3px 0px black" }}>📧 EMAIL THIS TO MIKE</button>
           </div>
         )}
+
+        {/* MOBILE ONLY - SINGLE HERO AT BOTTOM */}
+        <div className="mobile-hero-bottom">
+          <img src={SIDE_IMAGE_URL} alt="Telecoms Lawyer Hero" />
+        </div>
+
+        <style>{`
+          .mobile-hero-bottom { display: none; }
+          @media (max-width: 1100px) { .side-hero { display: none !important; } }
+          @media (max-width: 768px) {
+            .main-row { width: 100% !important; margin-top: 12px !important; padding: 0 10px !important; box-sizing: border-box; }
+            .center-box { max-width: 100% !important; width: 100% !important; padding: 14px !important; border-radius: 14px !important; box-shadow: 3px 3px 0px 0px black !important; }
+            .title-row { flex-direction: column !important; align-items: flex-start !important; gap: 10px !important; }
+            .hero-title { white-space: normal !important; font-size: 26px !important; line-height: 1.15 !important; letter-spacing: 1px !important; word-spacing: 1px !important; }
+            .mobile-hero-bottom { 
+              display: flex !important; 
+              justify-content: center; 
+              width: 100%; 
+              margin-top: 24px; 
+              padding: 0 10px 24px 10px; 
+              box-sizing: border-box; 
+            }
+            .mobile-hero-bottom img { 
+              width: 100%; 
+              max-width: 340px; 
+              height: auto; 
+              border-radius: 12px; 
+            }
+          }
+        `}</style>
       </div>
     </>
   );
