@@ -54,13 +54,14 @@ export default function Home() {
           <img src="/header.png" alt="Telecoms Lawyer: Hero of Connectivity" style={{ maxWidth: 760, width: "95%", height: "auto" }} />
         </div>
 
-        <div style={{ width: "100%", maxWidth: 700, border: "3px solid black", borderRadius: 18, padding: 18, background: "white", boxShadow: "5px 5px 0px 0px black", marginTop: 28 }}>
+  <div style={{ width: "95%", maxWidth: 920, border: "3px solid black", borderRadius: 18, padding: 18, background: "white", boxShadow: "5px 5px 0px 0px black", marginTop: 28 }}>
 
-          <h1 style={{ 
-            fontFamily: "'Bangers', cursive", 
-            fontSize: 38,
-            letterSpacing: "2.5px",
-            wordSpacing: "4px",
+       <h1 style={{ 
+  fontFamily: "'Bangers', cursive", 
+  fontSize: 36,
+  letterSpacing: "2px",
+  wordSpacing: "3px",
+  whiteSpace: "nowrap",
             color: "#1a9de3", 
             margin: "0 0 18px 0",
             WebkitTextStroke: "1.2px black",
