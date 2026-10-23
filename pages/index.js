@@ -134,21 +134,22 @@ export default function Home() {
     <>
       <Head>
         <link href="https://fonts.googleapis.com/css2?family=Bangers&family=Fredoka:wght@600;700;800&display=swap" rel="stylesheet" />
+        <meta name="viewport" content="width=device-width, initial-scale=1" />
       </Head>
       <div style={{ minHeight: "100vh", background: "#fffaf0", display: "flex", flexDirection: "column", alignItems: "center", padding: 0 }}>
         <div style={{ width: "100%", background: "white", borderBottom: "3px solid black", display: "flex", justifyContent: "center", padding: "10px 0" }}>
           <img src="/header.png" alt="Telecoms Lawyer: Hero of Connectivity" style={{ maxWidth: 760, width: "95%", height: "auto" }} />
         </div>
 
-        <div style={{ width: "98%", maxWidth: 1320, display: "flex", alignItems: "stretch", justifyContent: "center", gap: 16, marginTop: 28 }}>
+        <div className="main-row" style={{ width: "98%", maxWidth: 1320, display: "flex", alignItems: "stretch", justifyContent: "center", gap: 16, marginTop: 28 }}>
           <div style={{ width: 200, flexShrink: 0, display: "flex", alignSelf: "stretch" }} className="side-hero">
             <img src="https://hxs9xoachdqkxjdj.public.blob.vercel-storage.com/gallery/flying-through-the-air-superman-style-but-with-tl-on-his-shirt-not-s-looking-her-1792771695970-hGWsWtPFEGmtuB1xAImV6jvqjKweRZ.webp" alt="" style={{ width: "100%", height: "100%", objectFit: "cover", borderRadius: 12 }} />
           </div>
           
-          <div style={{ flex: 1, maxWidth: 920, border: "3px solid black", borderRadius: 18, padding: 18, background: "white", boxShadow: "5px 5px 0px 0px black" }}>
-            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 18, gap: 12 }}>
-              <h1 style={{ fontFamily: "'Bangers', cursive", fontSize: 36, letterSpacing: "2px", wordSpacing: "3px", whiteSpace: "nowrap", color: "#1a9de3", margin: 0, WebkitTextStroke: "1.2px black", textShadow: "4px 4px 0px black", lineHeight: 1.1 }}>What challenge should our hero face next?</h1>
-              <button onClick={() => setSuggestions(getRandomChallenges())} style={{ background: "white", border: "2.5px solid black", borderRadius: 10, padding: "6px 12px", fontFamily: "'Fredoka', sans-serif", fontWeight: 800, fontSize: 12, cursor: "pointer", whiteSpace: "nowrap" }}>🔄 NEW IDEAS</button>
+          <div className="center-box" style={{ flex: 1, maxWidth: 920, border: "3px solid black", borderRadius: 18, padding: 18, background: "white", boxShadow: "5px 5px 0px 0px black" }}>
+            <div className="title-row" style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 18, gap: 12 }}>
+              <h1 className="hero-title" style={{ fontFamily: "'Bangers', cursive", fontSize: 36, letterSpacing: "2px", wordSpacing: "3px", whiteSpace: "nowrap", color: "#1a9de3", margin: 0, WebkitTextStroke: "1.2px black", textShadow: "4px 4px 0px black", lineHeight: 1.1 }}>What challenge should our hero face next?</h1>
+              <button onClick={() => setSuggestions(getRandomChallenges())} style={{ background: "white", border: "2.5px solid black", borderRadius: 10, padding: "6px 12px", fontFamily: "'Fredoka', sans-serif", fontWeight: 800, fontSize: 12, cursor: "pointer", whiteSpace: "nowrap", flexShrink: 0 }}>🔄 NEW IDEAS</button>
             </div>
             <textarea value={scenario} onChange={(e) => setScenario(e.target.value)} placeholder="pick a suggestion or enter your scenario here - e.g. doing a tightrope walk on fibreoptic cable between two rooftops" style={{ width: "100%", border: "3px solid black", borderRadius: 14, padding: 12, fontSize: 13, minHeight: 85, fontFamily: "'Fredoka', sans-serif", fontWeight: 600, boxSizing: "border-box" }} />
             <div style={{ display: "flex", flexWrap: "wrap", gap: 8, marginTop: 14 }}>
@@ -162,12 +163,20 @@ export default function Home() {
           </div>
         </div>
 
-        <style>{`@media (max-width: 1100px) { .side-hero { display: none !important; } }`}</style>
+        <style>{`
+          @media (max-width: 1100px) { .side-hero { display: none !important; } }
+          @media (max-width: 768px) {
+            .main-row { width: 100% !important; margin-top: 12px !important; padding: 0 10px !important; box-sizing: border-box; }
+            .center-box { max-width: 100% !important; width: 100% !important; padding: 14px !important; border-radius: 14px !important; box-shadow: 3px 3px 0px 0px black !important; }
+            .title-row { flex-direction: column !important; align-items: flex-start !important; gap: 10px !important; }
+            .hero-title { white-space: normal !important; font-size: 26px !important; line-height: 1.15 !important; letter-spacing: 1px !important; word-spacing: 1px !important; }
+          }
+        `}</style>
 
         {imageUrl && (
-          <div style={{ marginTop: 32, width: "95%", maxWidth: 920, border: "3px solid black", borderRadius: 18, padding: 18, background: "white", boxShadow: "5px 5px 0px 0px black", textAlign: "center" }}>
+          <div style={{ marginTop: 24, width: "95%", maxWidth: 920, border: "3px solid black", borderRadius: 18, padding: 18, background: "white", boxShadow: "5px 5px 0px 0px black", textAlign: "center", boxSizing: "border-box" }}>
             <h2 style={{ fontFamily: "'Bangers', cursive", fontSize: 28, margin: "0 0 12px 0" }}>YOUR HERO IS READY!</h2>
-            <p style={{ fontFamily: "'Fredoka', sans-serif", fontWeight: 600, margin: "0 0 16px 0" }}>{scenario}</p>
+            <p style={{ fontFamily: "'Fredoka', sans-serif", fontWeight: 600, margin: "0 0 16px 0", wordBreak: "break-word" }}>{scenario}</p>
             <img src={imageUrl} alt={scenario} style={{ width: "100%", borderRadius: 12, border: "3px solid black", display: "block" }} />
             <button onClick={() => { const subject = encodeURIComponent(`New Telecoms Lawyer cartoon: ${scenario}`); const body = encodeURIComponent(`Hi Mike,\n\nHere's the latest Telecoms Lawyer hero cartoon:\n\nChallenge: ${scenario}\n\nPermanent image link (Blob store - won't expire):\n${imageUrl}\n\nBest,\n`); window.location.href = `mailto:mike.conradi@dlapiper.com?subject=${subject}&body=${body}`; }} style={{ width: "100%", marginTop: 16, background: "#1a9de3", color: "white", border: "3px solid black", borderRadius: 12, padding: "14px 0", fontFamily: "'Bangers', cursive", fontSize: 20, letterSpacing: "1px", cursor: "pointer", boxShadow: "3px 3px 0px black" }}>📧 EMAIL THIS TO MIKE</button>
           </div>
