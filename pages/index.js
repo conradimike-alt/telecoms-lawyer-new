@@ -87,13 +87,23 @@ const TELECOMS_HERO = [
   "Wayleave for hospital - no weekend working allowed",
 ];
 
+function generateTotallyNewIdea() {
+  const actions = ["Wrestling", "Balancing", "Carrying", "Surfing", "Juggling", "Tightrope walking on", "Lassoing", "Paragliding with", "Sumo-wrestling", "Untangling"];
+  const objects = ["a live 5G cabinet", "200m of armoured fibre", "a submarine cable joint", "a runaway duct mole", "a tower crane tangled in wayleaves", "a 10MW data centre cable", "a flock of pigeons guarding a mast", "a giant spool of duct rope", "a Network Rail wayleave bundle", "a Crown Estate permit scroll"];
+  const twists = ["while Ofcom watches", "in a hurricane on a rooftop", "during a wayleave tribunal", "with a farmer chasing him", "over a flooded trench", "while holding 50 wayleave notices", "blindfolded with code powers", "on top of the BT Tower", "during a client board meeting", "while riding a wayleave digger"];
+  return `${actions[Math.floor(Math.random()*actions.length)]} ${objects[Math.floor(Math.random()*objects.length)]} ${twists[Math.floor(Math.random()*twists.length)]}`;
+}
+
 function getRandomChallenges() {
   const shuffle = (arr) => [...arr].sort(() => 0.5 - Math.random());
-  const generalCount = Math.random() > 0.5 ? 2 : 3;
-  const telecomsCount = 5 - generalCount;
-  const generalPicked = shuffle(GENERAL_HERO).slice(0, generalCount);
-  const telecomsPicked = shuffle(TELECOMS_HERO).slice(0, telecomsCount);
-  return shuffle([...generalPicked, ...telecomsPicked]);
+  const generalPicked = shuffle(GENERAL_HERO).slice(0, 2);
+  const telecomsPicked = shuffle(TELECOMS_HERO).slice(0, 2);
+  let newIdea;
+  do {
+    newIdea = generateTotallyNewIdea();
+  } while ([...generalPicked, ...telecomsPicked].includes(newIdea));
+  const combined = [...generalPicked, ...telecomsPicked, newIdea];
+  return shuffle(combined);
 }
 
 export default function Home() {
@@ -131,10 +141,12 @@ export default function Home() {
           <img src="/header.png" alt="Telecoms Lawyer: Hero of Connectivity" style={{ maxWidth: 760, width: "95%", height: "auto" }} />
         </div>
 
-        <div style={{ width: "98%", maxWidth: 1240, display: "flex", alignItems: "center", justifyContent: "center", gap: 18, marginTop: 28 }}>
-          <img src="https://hxs9xoachdqkxjdj.public.blob.vercel-storage.com/gallery/flying-through-the-air-superman-style-1792767018591-6rpKbR5MQ8ag3xYECFOMTLBQrRNMrL.webp" alt="" style={{ width: 180, height: "auto", flexShrink: 0 }} className="side-hero" />
+        <div style={{ width: "98%", maxWidth: 1280, display: "flex", alignItems: "stretch", justifyContent: "center", gap: 18, marginTop: 28 }}>
+          <div style={{ width: 180, flexShrink: 0, display: "flex" }} className="side-hero">
+            <img src="https://hxs9xoachdqkxjdj.public.blob.vercel-storage.com/gallery/flying-through-the-air-superman-style-1792767018591-6rpKbR5MQ8ag3xYECFOMTLBQrRNMrL.webp" alt="" style={{ width: "100%", height: "100%", objectFit: "contain", objectPosition: "center top" }} />
+          </div>
           
-          <div style={{ flex: 1, maxWidth: 920, border: "3px solid black", borderRadius: 18, padding: 18, background: "white", boxShadow: "5px 5px 0px 0px black" }}>
+          <div style={{ flex: 1, maxWidth: 920, border: "3px solid black", borderRadius: 18, padding: 18, background: "white", boxShadow: "5px 5px 0px 0px black", alignSelf: "flex-start" }}>
             <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 18, gap: 12 }}>
               <h1 style={{ fontFamily: "'Bangers', cursive", fontSize: 36, letterSpacing: "2px", wordSpacing: "3px", whiteSpace: "nowrap", color: "#1a9de3", margin: 0, WebkitTextStroke: "1.2px black", textShadow: "4px 4px 0px black", lineHeight: 1.1 }}>What challenge should our hero face next?</h1>
               <button onClick={() => setSuggestions(getRandomChallenges())} style={{ background: "white", border: "2.5px solid black", borderRadius: 10, padding: "6px 12px", fontFamily: "'Fredoka', sans-serif", fontWeight: 800, fontSize: 12, cursor: "pointer", whiteSpace: "nowrap" }}>🔄 NEW IDEAS</button>
@@ -146,7 +158,9 @@ export default function Home() {
             <button onClick={handleGenerate} disabled={loading || !scenario.trim()} style={{ width: "100%", marginTop: 16, background: "#ffeb00", border: "3px solid black", borderRadius: 12, padding: "12px 0", fontFamily: "'Bangers', cursive", fontSize: 22, letterSpacing: "1px", cursor: "pointer", boxShadow: "2px 2px 0px black", opacity: loading ? 0.6 : 1 }}>{loading ? "GENERATING YOUR HERO..." : "✨ GENERATE CARTOON NOW"}</button>
           </div>
 
-          <img src="https://hxs9xoachdqkxjdj.public.blob.vercel-storage.com/gallery/flying-through-the-air-superman-style-1792767018591-6rpKbR5MQ8ag3xYECFOMTLBQrRNMrL.webp" alt="" style={{ width: 180, height: "auto", flexShrink: 0, transform: "scaleX(-1)" }} className="side-hero" />
+          <div style={{ width: 180, flexShrink: 0, display: "flex" }} className="side-hero">
+            <img src="https://hxs9xoachdqkxjdj.public.blob.vercel-storage.com/gallery/flying-through-the-air-superman-style-1792767018591-6rpKbR5MQ8ag3xYECFOMTLBQrRNMrL.webp" alt="" style={{ width: "100%", height: "100%", objectFit: "contain", objectPosition: "center top", transform: "scaleX(-1)" }} />
+          </div>
         </div>
 
         <style>{`@media (max-width: 1100px) { .side-hero { display: none !important; } }`}</style>
