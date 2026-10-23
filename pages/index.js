@@ -1,98 +1,124 @@
-import { useState, useEffect } from 'react';
-import Head from 'next/head';
+import { useState, useEffect } from "react";
+
+const ALL_CHALLENGES = [
+  "ROAMING REGULATION RUMBLE",
+  "FIBRE WAYLEAVE WRAITH",
+  "500-page MSA in 30 mins",
+  "Submarine cable joint build in 2 weeks",
+  "OF-COM investigation at 5pm Friday",
+  "Client needs a new submarine cable joint build agreement on just 2 weeks notice",
+  "Indefeasible Right of Use drafted on a napkin",
+  "Data centre power outage during live migration",
+  "Wayleave blocked by angry farmer",
+  "Subsea cable cut by fishing trawler",
+  "MVNO wants to launch tomorrow",
+  "Code powers vs. landlord standoff",
+  "Pension fund wants to buy the whole fibre network",
+  "Emergency restoration of a core PoP",
+  "Regulatory filing due in 1 hour",
+  "Customer claims force majeure for late payment",
+  "Duct access denied at midnight",
+  "Capacity contract in USD, client pays in GBP",
+  "Wayleave expired yesterday, build starts tomorrow",
+  "Liability cap unlimited? No chance!",
+  "GDPR breach from a misconfigured router",
+  "Tackling a 100-page wayleave schedule",
+  "Negotiating IRU vs lease",
+  "Dark fibre deal with no SLA",
+  "Colocation contract with 99.999% uptime"
+];
+
+function getRandomChallenges() {
+  const shuffled = [...ALL_CHALLENGES].sort(() => 0.5 - Math.random());
+  return shuffled.slice(0, 5);
+}
 
 export default function Home() {
   const [scenario, setScenario] = useState("");
-  const [image, setImage] = useState(null);
+  const [suggestions, setSuggestions] = useState([]);
   const [loading, setLoading] = useState(false);
+  const [imageUrl, setImageUrl] = useState(null);
 
   useEffect(() => {
-    const p = new URLSearchParams(window.location.search).get('scenario');
-    if (p) {
-      const d = decodeURIComponent(p.replace(/\+/g, ' '));
-      setScenario(d);
-      generate(d);
-    }
+    setSuggestions(getRandomChallenges());
   }, []);
 
-  async function generate(customScen) {
-    const s = customScen || scenario;
-    if (!s.trim()) return;
-    setLoading(true); setImage(null);
-    const url = new URL(window.location); url.searchParams.set('scenario', s);
-    window.history.replaceState({}, '', url);
+  const handleGenerate = async () => {
+    if (!scenario.trim()) return;
+    setLoading(true);
+    setImageUrl(null);
     try {
-      const res = await fetch('/api/generate', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ scenario: s }) });
-      const json = await res.json();
-      if (!res.ok) throw new Error(json.error);
-      const { id } = json;
-      let tries = 0;
-      while (tries < 60) {
+      const res = await fetch("/api/generate", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ scenario }),
+      });
+      const { id, error } = await res.json();
+      if (error) throw new Error(error);
+
+      // poll status.js (your fixed version)
+      let done = false;
+      while (!done) {
         await new Promise(r => setTimeout(r, 2000));
-        // FIXED: now passes scenario so it gets saved with the image
-        const poll = await fetch(`/api/status?id=${id}&scenario=${encodeURIComponent(s)}`);
-        const data = await poll.json();
-        if (data.status === 'succeeded') {
-          const out = Array.isArray(data.output) ? data.output[0] : (data.output || data.output_permanent);
-          if (out) { setImage(out); setLoading(false); return; }
+        const statusRes = await fetch(`/api/status?id=${id}&scenario=${encodeURIComponent(scenario)}`);
+        const data = await statusRes.json();
+        if (data.status === "succeeded") {
+          setImageUrl(data.imageUrl || data.image || data.url);
+          done = true;
         }
-        if (data.status === 'failed') throw new Error(data.error);
-        tries++;
+        if (data.status === "failed") throw new Error(data.error);
       }
-      throw new Error("Timed out");
-    } catch (e) { alert(e.message); setLoading(false); }
-  }
-
-  function emailToMike() {
-    const subject = "Here's my Telecoms Lawyer image";
-    const body = `Hi Mike,
-
-I *loved* your superhero telecoms lawyer! Here's what I had him do:
-
-Scenario: ${scenario}
-
-Image (permanent link - won't expire):
-${image}
-
-Thanks!
-`;
-
-    const mailtoLink = `mailto:mike.conradi@dlapiper.com?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
-    
-    const a = document.createElement('a');
-    a.href = mailtoLink;
-    a.target = '_blank';
-    document.body.appendChild(a);
-    a.click();
-    document.body.removeChild(a);
-  }
+    } catch (e) {
+      alert(e.message);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   return (
-    <>
-      <Head>
-        <link href="https://fonts.googleapis.com/css2?family=Bangers&family=Luckiest+Guy&display=swap" rel="stylesheet" />
-      </Head>
-      <div style={{fontFamily:'Arial Black, Arial', background:'#fefefe', minHeight:'100vh'}}>
-        <div style={{textAlign:'center', padding:'15px'}}><img src="/header.png" alt="header" style={{maxWidth:'100%', maxHeight:'140px'}} /></div>
-        <div style={{maxWidth:'680px', margin:'0 auto', padding:'16px'}}>
-          <div style={{border:'3px solid #000', borderRadius:'14px', padding:'16px', background:'#fff', boxShadow:'6px 6px 0 #000'}}>
-            <input value={scenario} onChange={e=>setScenario(e.target.value)} placeholder="What is he doing? e.g. saving cat from a tree" style={{width:'100%', padding:'14px', border:'3px solid #000', borderRadius:'10px', fontSize:'16px', boxSizing:'border-box'}} />
-            <button onClick={()=>generate()} disabled={loading} style={{width:'100%', marginTop:'12px', background:'#ffeb3b', border:'3px solid #000', padding:'14px', fontWeight:900, fontSize:'1.1rem', borderRadius:'10px', cursor:'pointer'}}>{loading? '⚡ GENERATING...' : '🎨 GENERATE CARTOON NOW'}</button>
-          </div>
-          {image && (
-            <>
-              <div style={{marginTop:'24px', border:'4px solid #000', borderRadius:'12px', overflow:'hidden', boxShadow:'6px 6px 0 #000', position:'relative', lineHeight:0}}>
-                <img src={image} style={{width:'100%', display:'block'}} />
-                <div style={{position:'absolute', top:0, left:0, right:0, background:'#1e88e5', color:'#fff', padding:'12px', textAlign:'center', fontWeight:400, borderBottom:'4px solid #000', fontFamily:"'Bangers', cursive", fontSize:'22px', letterSpacing:'1.5px', lineHeight:1}}>TELECOMS LAWYER..</div>
-                <div style={{position:'absolute', bottom:'18px', left:'50%', transform:'translateX(-50%)', width:'90%', display:'flex', justifyContent:'center', filter:'drop-shadow(3px 3px 0 #000)', lineHeight:'1.2'}}>
-                  <div style={{background:'#ffeb3b', border:'3px solid #000', padding:'10px 20px', fontWeight:400, textTransform:'uppercase', textAlign:'center', whiteSpace:'normal', wordWrap:'break-word', overflowWrap:'break-word', maxWidth:'100%', fontFamily:"'Bangers', cursive", fontSize:'clamp(16px, 4vw, 20px)', letterSpacing:'1px'}}>{scenario}</div>
-                </div>
-              </div>
-              <button onClick={emailToMike} style={{width:'100%', marginTop:'20px', background:'#1e88e5', color:'#fff', border:'3px solid #000', padding:'16px', fontWeight:900, fontSize:'1.1rem', borderRadius:'12px', cursor:'pointer', boxShadow:'6px 6px 0 #000'}}>📧 EMAIL THIS TO MIKE</button>
-            </>
-          )}
+    <div className="min-h-screen bg-white flex flex-col items-center p-4">
+      {/* THE BLACK BOX FROM YOUR SCREENSHOT */}
+      <div className="w-full max-w-[720px] border-[3px] border-black rounded-[16px] p-4 bg-white shadow-[4px_4px_0px_0px_black]">
+        <h1 className="font-black text-[18px] mb-2 leading-tight">
+          What should the Telecoms Lawyer face next?
+        </h1>
+
+        <textarea
+          value={scenario}
+          onChange={(e) => setScenario(e.target.value)}
+          placeholder="e.g. client needs a new submarine cable joint build agreement on just 2 weeks notice"
+          className="w-full border-[3px] border-black rounded-[12px] p-3 text-[14px] min-h-[80px] focus:outline-none placeholder:font-bold placeholder:text-[#999]"
+        />
+
+        <div className="flex flex-wrap gap-2 mt-3">
+          {suggestions.map((s) => (
+            <button
+              key={s}
+              onClick={() => setScenario(s)}
+              className="bg-[#d6eaff] border-[2px] border-black rounded-full px-3 py-1 text-[12px] font-bold uppercase hover:bg-black hover:text-white transition-colors text-left"
+            >
+              {s}
+            </button>
+          ))}
         </div>
+
+        <button
+          onClick={handleGenerate}
+          disabled={loading || !scenario.trim()}
+          className="w-full mt-4 bg-[#ffeb00] border-[3px] border-black rounded-[12px] py-3 font-black uppercase text-[16px] tracking-wide hover:translate-y-[-2px] active:translate-y-[1px] transition-transform disabled:opacity-50"
+        >
+          {loading ? "GENERATING..." : "🎨 GENERATE CARTOON NOW"}
+        </button>
+        <p className="text-[11px] text-[#666] mt-2">
+          Same hero every time: bald, black glasses, white shirt, brown cape, TL badge
+        </p>
       </div>
-    </>
+
+      {imageUrl && (
+        <div className="mt-6 w-full max-w-[720px] border-[3px] border-black rounded-[16px] overflow-hidden">
+          <img src={imageUrl} alt={scenario} className="w-full" />
+        </div>
+      )}
+    </div>
   );
 }
