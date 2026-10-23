@@ -56,18 +56,18 @@ export default function Home() {
 
         <div style={{ width: "100%", maxWidth: 700, border: "3px solid black", borderRadius: 18, padding: 18, background: "white", boxShadow: "5px 5px 0px 0px black", marginTop: 28 }}>
 
-          {/* THIS TITLE NOW MATCHES YOUR HEADER */}
           <h1 style={{ 
             fontFamily: "'Bangers', cursive", 
-            fontSize: 26, 
+            fontSize: 38,
+            letterSpacing: "2.5px",
+            wordSpacing: "4px",
             color: "#1a9de3", 
-            letterSpacing: "0.5px",
-            margin: "0 0 14px 0",
-            WebkitTextStroke: "1px black",
-            textShadow: "3px 3px 0px black",
+            margin: "0 0 18px 0",
+            WebkitTextStroke: "1.2px black",
+            textShadow: "4px 4px 0px black",
             lineHeight: 1.1
           }}>
-            What should the Telecoms Lawyer face next?
+            What challenge should our hero face next?
           </h1>
 
           <textarea 
@@ -79,43 +79,13 @@ export default function Home() {
 
           <div style={{ display: "flex", flexWrap: "wrap", gap: 8, marginTop: 14 }}>
             {suggestions.map((s) => (
-              <button 
-                key={s} 
-                onClick={() => setScenario(s)} 
-                style={{ 
-                  background: "#d6eaff", 
-                  border: "2.5px solid black", 
-                  borderRadius: 999, 
-                  padding: "7px 14px", 
-                  fontSize: 12, 
-                  fontFamily: "'Fredoka', sans-serif",
-                  fontWeight: 800, 
-                  textTransform: "uppercase", 
-                  cursor: "pointer",
-                  letterSpacing: "0.2px"
-                }}>{s}</button>
+              <button key={s} onClick={() => setScenario(s)} style={{ background: "#d6eaff", border: "2.5px solid black", borderRadius: 999, padding: "7px 14px", fontSize: 12, fontFamily: "'Fredoka', sans-serif", fontWeight: 800, textTransform: "uppercase", cursor: "pointer" }}>{s}</button>
             ))}
           </div>
 
-          <button 
-            onClick={handleGenerate} 
-            disabled={loading || !scenario.trim()} 
-            style={{ 
-              width: "100%", 
-              marginTop: 16, 
-              background: "#ffeb00", 
-              border: "3px solid black", 
-              borderRadius: 12, 
-              padding: "12px 0", 
-              fontFamily: "'Bangers', cursive",
-              fontSize: 22, 
-              letterSpacing: "1px",
-              cursor: "pointer",
-              boxShadow: "2px 2px 0px black"
-            }}>
+          <button onClick={handleGenerate} disabled={loading || !scenario.trim()} style={{ width: "100%", marginTop: 16, background: "#ffeb00", border: "3px solid black", borderRadius: 12, padding: "12px 0", fontFamily: "'Bangers', cursive", fontSize: 22, letterSpacing: "1px", cursor: "pointer", boxShadow: "2px 2px 0px black" }}>
             {loading ? "GENERATING..." : "✨ GENERATE CARTOON NOW"}
           </button>
-          <p style={{ fontSize: 11, color: "#666", marginTop: 8, fontFamily: "'Fredoka', sans-serif" }}>Same hero every time: bald, black glasses, white shirt, brown cape, TL badge</p>
         </div>
 
         {imageUrl && <div style={{ marginTop: 24, width: "100%", maxWidth: 700, border: "3px solid black", borderRadius: 16, overflow: "hidden" }}><img src={imageUrl} alt={scenario} style={{ width: "100%", display: "block" }} /></div>}
