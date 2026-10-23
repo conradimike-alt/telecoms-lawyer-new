@@ -88,19 +88,12 @@ const TELECOMS_HERO = [
 ];
 
 function getRandomChallenges() {
-  // Shuffle copy helper
   const shuffle = (arr) => [...arr].sort(() => 0.5 - Math.random());
-  
-  // Decide mix: either 2 general + 3 telecoms OR 3 general + 2 telecoms
   const generalCount = Math.random() > 0.5 ? 2 : 3;
   const telecomsCount = 5 - generalCount;
-  
   const generalPicked = shuffle(GENERAL_HERO).slice(0, generalCount);
   const telecomsPicked = shuffle(TELECOMS_HERO).slice(0, telecomsCount);
-  
-  // Combine and shuffle final 5 - guaranteed unique and at least 2 general
-  const combined = [...generalPicked, ...telecomsPicked];
-  return shuffle(combined);
+  return shuffle([...generalPicked, ...telecomsPicked]);
 }
 
 export default function Home() {
@@ -137,23 +130,26 @@ export default function Home() {
         <div style={{ width: "100%", background: "white", borderBottom: "3px solid black", display: "flex", justifyContent: "center", padding: "10px 0" }}>
           <img src="/header.png" alt="Telecoms Lawyer: Hero of Connectivity" style={{ maxWidth: 760, width: "95%", height: "auto" }} />
         </div>
-        <div style={{ width: "95%", maxWidth: 920, border: "3px solid black", borderRadius: 18, padding: 18, background: "white", boxShadow: "5px 5px 0px 0px black", marginTop: 28 }}>
-          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 18, gap: 12 }}>
-            <h1 style={{ fontFamily: "'Bangers', cursive", fontSize: 36, letterSpacing: "2px", wordSpacing: "3px", whiteSpace: "nowrap", color: "#1a9de3", margin: 0, WebkitTextStroke: "1.2px black", textShadow: "4px 4px 0px black", lineHeight: 1.1 }}>
-              What challenge should our hero face next?
-            </h1>
-            <button onClick={() => setSuggestions(getRandomChallenges())} style={{ background: "white", border: "2.5px solid black", borderRadius: 10, padding: "6px 12px", fontFamily: "'Fredoka', sans-serif", fontWeight: 800, fontSize: 12, cursor: "pointer", whiteSpace: "nowrap" }}>🔄 NEW IDEAS</button>
+
+        <div style={{ width: "98%", maxWidth: 1240, display: "flex", alignItems: "center", justifyContent: "center", gap: 18, marginTop: 28 }}>
+          <img src="https://hxs9xoachdqkxjdj.public.blob.vercel-storage.com/gallery/flying-through-the-air-superman-style-1792767018591-6rpKbR5MQ8ag3xYECFOMTLBQrRNMrL.webp" alt="" style={{ width: 180, height: "auto", flexShrink: 0 }} className="side-hero" />
+          
+          <div style={{ flex: 1, maxWidth: 920, border: "3px solid black", borderRadius: 18, padding: 18, background: "white", boxShadow: "5px 5px 0px 0px black" }}>
+            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 18, gap: 12 }}>
+              <h1 style={{ fontFamily: "'Bangers', cursive", fontSize: 36, letterSpacing: "2px", wordSpacing: "3px", whiteSpace: "nowrap", color: "#1a9de3", margin: 0, WebkitTextStroke: "1.2px black", textShadow: "4px 4px 0px black", lineHeight: 1.1 }}>What challenge should our hero face next?</h1>
+              <button onClick={() => setSuggestions(getRandomChallenges())} style={{ background: "white", border: "2.5px solid black", borderRadius: 10, padding: "6px 12px", fontFamily: "'Fredoka', sans-serif", fontWeight: 800, fontSize: 12, cursor: "pointer", whiteSpace: "nowrap" }}>🔄 NEW IDEAS</button>
+            </div>
+            <textarea value={scenario} onChange={(e) => setScenario(e.target.value)} placeholder="pick a suggestion or enter your scenario here - e.g. doing a tightrope walk on fibreoptic cable between two rooftops" style={{ width: "100%", border: "3px solid black", borderRadius: 14, padding: 12, fontSize: 13, minHeight: 85, fontFamily: "'Fredoka', sans-serif", fontWeight: 600, boxSizing: "border-box" }} />
+            <div style={{ display: "flex", flexWrap: "wrap", gap: 8, marginTop: 14 }}>
+              {suggestions.map((s) => (<button key={s} onClick={() => setScenario(s)} style={{ background: "#d6eaff", border: "2.5px solid black", borderRadius: 999, padding: "7px 14px", fontSize: 12, fontFamily: "'Fredoka', sans-serif", fontWeight: 800, textTransform: "uppercase", cursor: "pointer" }}>{s}</button>))}
+            </div>
+            <button onClick={handleGenerate} disabled={loading || !scenario.trim()} style={{ width: "100%", marginTop: 16, background: "#ffeb00", border: "3px solid black", borderRadius: 12, padding: "12px 0", fontFamily: "'Bangers', cursive", fontSize: 22, letterSpacing: "1px", cursor: "pointer", boxShadow: "2px 2px 0px black", opacity: loading ? 0.6 : 1 }}>{loading ? "GENERATING YOUR HERO..." : "✨ GENERATE CARTOON NOW"}</button>
           </div>
-          <textarea value={scenario} onChange={(e) => setScenario(e.target.value)} placeholder="pick a suggestion or enter your scenario here - e.g. doing a tightrope walk on fibreoptic cable between two rooftops" style={{ width: "100%", border: "3px solid black", borderRadius: 14, padding: 12, fontSize: 13, minHeight: 85, fontFamily: "'Fredoka', sans-serif", fontWeight: 600, boxSizing: "border-box" }} />
-          <div style={{ display: "flex", flexWrap: "wrap", gap: 8, marginTop: 14 }}>
-            {suggestions.map((s) => (
-              <button key={s} onClick={() => setScenario(s)} style={{ background: "#d6eaff", border: "2.5px solid black", borderRadius: 999, padding: "7px 14px", fontSize: 12, fontFamily: "'Fredoka', sans-serif", fontWeight: 800, textTransform: "uppercase", cursor: "pointer" }}>{s}</button>
-            ))}
-          </div>
-          <button onClick={handleGenerate} disabled={loading || !scenario.trim()} style={{ width: "100%", marginTop: 16, background: "#ffeb00", border: "3px solid black", borderRadius: 12, padding: "12px 0", fontFamily: "'Bangers', cursive", fontSize: 22, letterSpacing: "1px", cursor: "pointer", boxShadow: "2px 2px 0px black", opacity: loading ? 0.6 : 1 }}>
-            {loading ? "GENERATING YOUR HERO..." : "✨ GENERATE CARTOON NOW"}
-          </button>
+
+          <img src="https://hxs9xoachdqkxjdj.public.blob.vercel-storage.com/gallery/flying-through-the-air-superman-style-1792767018591-6rpKbR5MQ8ag3xYECFOMTLBQrRNMrL.webp" alt="" style={{ width: 180, height: "auto", flexShrink: 0, transform: "scaleX(-1)" }} className="side-hero" />
         </div>
+
+        <style>{`@media (max-width: 1100px) { .side-hero { display: none !important; } }`}</style>
 
         {imageUrl && (
           <div style={{ marginTop: 32, width: "95%", maxWidth: 920, border: "3px solid black", borderRadius: 18, padding: 18, background: "white", boxShadow: "5px 5px 0px 0px black", textAlign: "center" }}>
