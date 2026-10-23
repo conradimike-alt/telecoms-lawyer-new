@@ -149,8 +149,8 @@ export default function Home() {
           </div>
           
           <div className="center-box" style={{ flex: 1, maxWidth: 920, border: "3px solid black", borderRadius: 18, padding: 18, background: "white", boxShadow: "5px 5px 0px 0px black" }}>
-            <div className="title-row" style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 18, gap: 12 }}>
-              <h1 className="hero-title" style={{ fontFamily: "'Bangers', cursive", fontSize: 36, letterSpacing: "2px", wordSpacing: "3px", whiteSpace: "nowrap", color: "#1a9de3", margin: 0, WebkitTextStroke: "1.2px black", textShadow: "4px 4px 0px black", lineHeight: 1.1 }}>What challenge should our hero face next?</h1>
+            <div className="title-row" style={{ display: "flex", justifyContent: "center", alignItems: "center", marginBottom: 18, gap: 12, flexWrap: "wrap" }}>
+              <h1 className="hero-title" style={{ fontFamily: "'Bangers', cursive", fontSize: 36, letterSpacing: "2px", wordSpacing: "3px", color: "#1a9de3", margin: 0, WebkitTextStroke: "1.2px black", textShadow: "4px 4px 0px black", lineHeight: 1.1, textAlign: "center", flex: 1 }}>What challenge should our hero face next?</h1>
               <button onClick={() => setSuggestions(getRandomChallenges())} style={{ background: "white", border: "2.5px solid black", borderRadius: 10, padding: "6px 12px", fontFamily: "'Fredoka', sans-serif", fontWeight: 800, fontSize: 12, cursor: "pointer", whiteSpace: "nowrap", flexShrink: 0 }}>🔄 NEW IDEAS</button>
             </div>
             <textarea value={scenario} onChange={(e) => setScenario(e.target.value)} placeholder="pick a suggestion or enter your scenario here - e.g. doing a tightrope walk on fibreoptic cable between two rooftops" style={{ width: "100%", border: "3px solid black", borderRadius: 14, padding: 12, fontSize: 13, minHeight: 85, fontFamily: "'Fredoka', sans-serif", fontWeight: 600, boxSizing: "border-box" }} />
@@ -174,7 +174,6 @@ export default function Home() {
           </div>
         )}
 
-        {/* MOBILE ONLY - SINGLE HERO AT BOTTOM */}
         <div className="mobile-hero-bottom">
           <img src={SIDE_IMAGE_URL} alt="Telecoms Lawyer Hero" />
         </div>
@@ -185,22 +184,10 @@ export default function Home() {
           @media (max-width: 768px) {
             .main-row { width: 100% !important; margin-top: 12px !important; padding: 0 10px !important; box-sizing: border-box; }
             .center-box { max-width: 100% !important; width: 100% !important; padding: 14px !important; border-radius: 14px !important; box-shadow: 3px 3px 0px 0px black !important; }
-            .title-row { flex-direction: column !important; align-items: flex-start !important; gap: 10px !important; }
-            .hero-title { white-space: normal !important; font-size: 26px !important; line-height: 1.15 !important; letter-spacing: 1px !important; word-spacing: 1px !important; }
-            .mobile-hero-bottom { 
-              display: flex !important; 
-              justify-content: center; 
-              width: 100%; 
-              margin-top: 24px; 
-              padding: 0 10px 24px 10px; 
-              box-sizing: border-box; 
-            }
-            .mobile-hero-bottom img { 
-              width: 100%; 
-              max-width: 340px; 
-              height: auto; 
-              border-radius: 12px; 
-            }
+            .title-row { flex-direction: column !important; gap: 10px !important; }
+            .hero-title { font-size: 26px !important; line-height: 1.15 !important; letter-spacing: 1px !important; word-spacing: 1px !important; }
+            .mobile-hero-bottom { display: flex !important; justify-content: center; width: 100%; margin-top: 24px; padding: 0 10px 24px 10px; box-sizing: border-box; }
+            .mobile-hero-bottom img { width: 100%; max-width: 340px; height: auto; border-radius: 12px; }
           }
         `}</style>
       </div>
