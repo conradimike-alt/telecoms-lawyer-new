@@ -104,22 +104,22 @@ function getRandomChallenges() {
 }
 
 export default function Home() {
-  const [scenario, setScenario] = useState("");
+  const [io, setio] = useState("");
   const [suggestions, setSuggestions] = useState([]);
   const [loading, setLoading] = useState(false);
   const [imageUrl, setImageUrl] = useState(null);
   useEffect(() => { setSuggestions(getRandomChallenges()); }, []);
 
   const handleGenerate = async () => {
-    if (!scenario.trim()) return;
+    if (!io.trim()) return;
     setLoading(true); setImageUrl(null);
     try {
-      const res = await fetch("/api/generate", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ scenario }) });
+      const res = await fetch("/api/generate", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ io }) });
       const { id } = await res.json();
       let done = false;
       while (!done) {
         await new Promise(r => setTimeout(r, 2000));
-        const sRes = await fetch(`/api/status?id=${id}&scenario=${encodeURIComponent(scenario)}`);
+        const sRes = await fetch(`/api/status?id=${id}&io=${encodeURIComponent(io)}`);
         const d = await sRes.json();
         const url = d.imageUrl || d.output || (Array.isArray(d.output) ? d.output[0] : null);
         if (d.status === "succeeded" && url) { setImageUrl(url); done = true; }
@@ -144,7 +144,7 @@ export default function Home() {
             </h1>
             <button onClick={() => setSuggestions(getRandomChallenges())} style={{ background: "white", border: "2.5px solid black", borderRadius: 10, padding: "6px 12px", fontFamily: "'Fredoka', sans-serif", fontWeight: 800, fontSize: 12, cursor: "pointer", whiteSpace: "nowrap" }}>🔄 NEW IDEAS</button>
           </div>
-          <textarea value={scenario} onChange={(e) => setScenario(e.target.value)} placeholder="enter the scenario here e.g. rescuing a client's cat from a tree or pick one from the suggestions" style={{ width: "100%", border: "3px solid black", borderRadius: 14, padding: 12, fontSize: 13, minHeight: 85, fontFamily: "'Fredoka', sans-serif", fontWeight: 600, boxSizing: "border-box" }} />
+          <textarea value={io} onChange={(e) => setScenario(e.target.value)} placeholder="enter the scenario here e.g. rescuing a client's cat from a tree  - or pick one from the suggestions" style={{ width: "100%", border: "3px solid black", borderRadius: 14, padding: 12, fontSize: 13, minHeight: 85, fontFamily: "'Fredoka', sans-serif", fontWeight: 600, boxSizing: "border-box" }} />
           <div style={{ display: "flex", flexWrap: "wrap", gap: 8, marginTop: 14 }}>
             {suggestions.map((s) => (
               <button key={s} onClick={() => setScenario(s)} style={{ background: "#d6eaff", border: "2.5px solid black", borderRadius: 999, padding: "7px 14px", fontSize: 12, fontFamily: "'Fredoka', sans-serif", fontWeight: 800, textTransform: "uppercase", cursor: "pointer" }}>{s}</button>
