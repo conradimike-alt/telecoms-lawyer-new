@@ -88,16 +88,19 @@ const TELECOMS_HERO = [
 ];
 
 function getRandomChallenges() {
-  const general = [...GENERAL_HERO].sort(() => 0.5 - Math.random()).slice(0, 2);
-  const telecoms = [...TELECOMS_HERO].sort(() => 0.5 - Math.random()).slice(0, 3);
-  // Randomly sometimes give 3 general / 2 telecoms for variety
-  if (Math.random() > 0.5) {
-    return [...general, ...telecoms].sort(() => 0.5 - Math.random());
-  } else {
-    const extraGeneral = [...GENERAL_HERO].sort(() => 0.5 - Math.random()).slice(0, 1)[0];
-    const shuffledTelecoms = [...TELECOMS_HERO].sort(() => 0.5 - Math.random()).slice(0, 2);
-    return [extraGeneral, ...general, ...shuffledTelecoms].sort(() => 0.5 - Math.random());
-  }
+  // Shuffle copy helper
+  const shuffle = (arr) => [...arr].sort(() => 0.5 - Math.random());
+  
+  // Decide mix: either 2 general + 3 telecoms OR 3 general + 2 telecoms
+  const generalCount = Math.random() > 0.5 ? 2 : 3;
+  const telecomsCount = 5 - generalCount;
+  
+  const generalPicked = shuffle(GENERAL_HERO).slice(0, generalCount);
+  const telecomsPicked = shuffle(TELECOMS_HERO).slice(0, telecomsCount);
+  
+  // Combine and shuffle final 5 - guaranteed unique and at least 2 general
+  const combined = [...generalPicked, ...telecomsPicked];
+  return shuffle(combined);
 }
 
 export default function Home() {
@@ -141,11 +144,10 @@ export default function Home() {
             </h1>
             <button onClick={() => setSuggestions(getRandomChallenges())} style={{ background: "white", border: "2.5px solid black", borderRadius: 10, padding: "6px 12px", fontFamily: "'Fredoka', sans-serif", fontWeight: 800, fontSize: 12, cursor: "pointer", whiteSpace: "nowrap" }}>🔄 NEW IDEAS</button>
           </div>
-
           <textarea value={scenario} onChange={(e) => setScenario(e.target.value)} placeholder="e.g. client needs a new submarine cable joint build agreement on just 2 weeks notice" style={{ width: "100%", border: "3px solid black", borderRadius: 14, padding: 12, fontSize: 13, minHeight: 85, fontFamily: "'Fredoka', sans-serif", fontWeight: 600, boxSizing: "border-box" }} />
           <div style={{ display: "flex", flexWrap: "wrap", gap: 8, marginTop: 14 }}>
             {suggestions.map((s) => (
-              <button key={s} onClick={() => setScenario(s)} style={{ background: GENERAL_HERO.includes(s) ? "#ffe6a8" : "#d6eaff", border: "2.5px solid black", borderRadius: 999, padding: "7px 14px", fontSize: 12, fontFamily: "'Fredoka', sans-serif", fontWeight: 800, textTransform: "uppercase", cursor: "pointer" }}>{s}</button>
+              <button key={s} onClick={() => setScenario(s)} style={{ background: "#d6eaff", border: "2.5px solid black", borderRadius: 999, padding: "7px 14px", fontSize: 12, fontFamily: "'Fredoka', sans-serif", fontWeight: 800, textTransform: "uppercase", cursor: "pointer" }}>{s}</button>
             ))}
           </div>
           <button onClick={handleGenerate} disabled={loading || !scenario.trim()} style={{ width: "100%", marginTop: 16, background: "#ffeb00", border: "3px solid black", borderRadius: 12, padding: "12px 0", fontFamily: "'Bangers', cursive", fontSize: 22, letterSpacing: "1px", cursor: "pointer", boxShadow: "2px 2px 0px black", opacity: loading ? 0.6 : 1 }}>
