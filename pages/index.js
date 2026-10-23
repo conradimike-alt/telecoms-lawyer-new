@@ -158,7 +158,7 @@ export default function Home() {
           </div>
 
           <div style={{ width: 200, flexShrink: 0, display: "flex", alignSelf: "stretch" }} className="side-hero">
-            <img src="https://hxs9xoachdqkxjdj.public.blob.vercel-storage.com/gallery/flying-through-the-air-superman-style-but-with-tl-on-his-shirt-not-s-looking-her-1792771695970-hGWsWtPFEGmtuB1xAImV6jvqjKweRZ.webp" alt="" style={{ width: "100%", height: "100%", objectFit: "cover", borderRadius: 12, transform: "scaleX(-1)" }} />
+            <img src="https://hxs9xoachdqkxjdj.public.blob.vercel-storage.com/gallery/flying-through-the-air-superman-style-but-with-tl-on-his-shirt-not-s-looking-her-1792771695970-hGWsWtPFEGmtuB1xAImV6jvqjKweRZ.webp" alt="" style={{ width: "100%", height: "100%", objectFit: "cover", borderRadius: 12 }} />
           </div>
         </div>
 
