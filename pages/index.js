@@ -141,9 +141,8 @@ export default function Home() {
         </div>
 
         <div style={{ width: "98%", maxWidth: 1320, display: "flex", alignItems: "stretch", justifyContent: "center", gap: 16, marginTop: 28 }}>
-          {/* LEFT IMAGE - NOW FULL HEIGHT */}
           <div style={{ width: 200, flexShrink: 0, display: "flex", alignSelf: "stretch" }} className="side-hero">
-            <img src="https://hxs9xoachdqkxjdj.public.blob.vercel-storage.com/gallery/flying-through-the-air-superman-style-1792767018591-6rpKbR5MQ8ag3xYECFOMTLBQrRNMrL.webp" alt="" style={{ width: "100%", height: "100%", objectFit: "cover", borderRadius: 12 }} />
+            <img src="https://hxs9xoachdqkxjdj.public.blob.vercel-storage.com/gallery/flying-through-the-air-superman-style-but-with-tl-on-his-shirt-not-s-looking-her-1792771695970-hGWsWtPFEGmtuB1xAImV6jvqjKweRZ.webp" alt="" style={{ width: "100%", height: "100%", objectFit: "cover", borderRadius: 12 }} />
           </div>
           
           <div style={{ flex: 1, maxWidth: 920, border: "3px solid black", borderRadius: 18, padding: 18, background: "white", boxShadow: "5px 5px 0px 0px black" }}>
@@ -158,9 +157,8 @@ export default function Home() {
             <button onClick={handleGenerate} disabled={loading || !scenario.trim()} style={{ width: "100%", marginTop: 16, background: "#ffeb00", border: "3px solid black", borderRadius: 12, padding: "12px 0", fontFamily: "'Bangers', cursive", fontSize: 22, letterSpacing: "1px", cursor: "pointer", boxShadow: "2px 2px 0px black", opacity: loading ? 0.6 : 1 }}>{loading ? "GENERATING YOUR HERO..." : "✨ GENERATE CARTOON NOW"}</button>
           </div>
 
-          {/* RIGHT IMAGE - NOW FULL HEIGHT */}
           <div style={{ width: 200, flexShrink: 0, display: "flex", alignSelf: "stretch" }} className="side-hero">
-            <img src="https://hxs9xoachdqkxjdj.public.blob.vercel-storage.com/gallery/flying-through-the-air-superman-style-1792767018591-6rpKbR5MQ8ag3xYECFOMTLBQrRNMrL.webp" alt="" style={{ width: "100%", height: "100%", objectFit: "cover", borderRadius: 12, transform: "scaleX(-1)" }} />
+            <img src="https://hxs9xoachdqkxjdj.public.blob.vercel-storage.com/gallery/flying-through-the-air-superman-style-but-with-tl-on-his-shirt-not-s-looking-her-1792771695970-hGWsWtPFEGmtuB1xAImV6jvqjKweRZ.webp" alt="" style={{ width: "100%", height: "100%", objectFit: "cover", borderRadius: 12, transform: "scaleX(-1)" }} />
           </div>
         </div>
 
